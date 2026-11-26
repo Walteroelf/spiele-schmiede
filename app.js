@@ -405,6 +405,8 @@ function chatAnsicht(was) {
   $('btnNeuScan').hidden = was !== 'chat';
   setzeHaken(false);
   $('btnCode').hidden = was === 'chat';
+  // Wer aus Versehen scannt, kommt zum offenen Chat zurück
+  $('btnBleiben').hidden = was === 'chat' || !$('chatRahmen').getAttribute('src');
 }
 // Unter dem Chat: die Schritte, dann ein Häkchen. Erst danach geht „Spiel starten“.
 const AUFTRAEGE = [
@@ -484,7 +486,15 @@ function chatOeffnen() {
 }
 chat.addEventListener('close', stoppeKamera);
 document.addEventListener('visibilitychange', () => { if (document.hidden && strom) { stoppeKamera(); chatAnsicht('keinChat'); } });
-$('btnNeuScan').onclick = scanne;
+// Sicherung: erst nachfragen, bevor der offene Chat für einen neuen Scan verlassen wird
+$('btnNeuScan').onclick = () => {
+  const ja = knopf('Ja, neu scannen', 'qr', 'leise', () => { fenster.close(); scanne(); });
+  oeffne('Neuen QR-Code scannen?',
+    el('p', {}, 'Dein Chat ist schon offen. Frage erst deine Lehrkraft.'),
+    el('div', { class: 'reihe' }, knopf('Nein, im Chat bleiben', 'zurueck', 'gruen riesig', () => fenster.close())),
+    el('div', { class: 'reihe' }, ja));
+};
+$('btnBleiben').onclick = () => { stoppeKamera(); $('chatHinweis').textContent = ''; chatAnsicht('chat'); };
 $('btnErledigt').onclick = () => {
   setzeHaken($('btnErledigt').getAttribute('aria-checked') !== 'true');
 };

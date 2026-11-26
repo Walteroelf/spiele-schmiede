@@ -96,7 +96,7 @@ dialog .leiste .phasen { margin-inline: auto; }
 #scanner, #keinChat { flex: 1; min-height: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--a-2); }
 #kamera { flex: 1; min-height: 0; width: 100%; object-fit: contain; }
 .auftrag { margin: 0; font-size: var(--gr-3); text-align: center; }
-#btnCode { align-self: center; flex: none; }
+#btnCode, #btnBleiben { align-self: center; flex: none; }
 /* Fremder Bereich: lila Rahmen wie das AIS-Chat-Logo. Eigener Bereich: Hellblau der Spiele-Schmiede. */
 #fremd { flex: 1; min-height: 0; display: flex; flex-direction: column; border: 6px solid #45297A; border-radius: var(--rundung); background: #45297A; }
 .fremdschild { margin: 0; padding: 0 0 4px; text-align: center; color: #fff; font-size: 16px; }
