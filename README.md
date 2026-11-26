@@ -26,7 +26,7 @@ Oben rechts lässt sich zwischen **Standard** und **Profi** wechseln. Profi hat 
 
 Unter **Lehrkraft** stehen die Texte für das Lernszenario im AIS-Chat. Die Technik-Regeln stehen im Szenario, deshalb bleibt der Steckbrief kurz.
 
-Außerdem gibt es einen **Tasten-Test** für das MakeyMakey und beim Spiel **Code überarbeiten**: Es führt zurück zum Planen, dort lassen sich Auswahl, Fehlerbilder und Wünsche ändern. Wer oben auf **2 KI-Chat** tippt, hat immer den aktuellen Text der Planung im Zwischenspeicher.
+Außerdem gibt es einen **Tasten-Test** für das MakeyMakey und beim Spiel **Code überarbeiten**: Es führt zurück zum Planen, dort lassen sich Auswahl, Fehlerbilder und Wünsche ändern. Vor dem Wechsel in den Chat fragt die App dann, was in den Zwischenspeicher soll: **Nur die Änderung** (Standard) oder **Alles noch einmal** (für einen neuen Chat).
 
 ## Datenschutz
 

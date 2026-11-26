@@ -227,17 +227,31 @@ function aenderungen() {
   if (stand.aenderung.trim()) neu.push('- ' + stand.aenderung.trim());
   return neu;
 }
-function aktuellerText() {
+// Standard bei Änderungen: nur der kurze Änderungstext. „alles“ schickt zusätzlich die ganze Planung.
+function aktuellerText(alles) {
   if (!stand.gesendet) return steckbrief();
   const neu = aenderungen();
   if (!neu.length) return stand.letzter;
-  return ['Bitte verbessere mein Spiel. Das soll anders sein:', ...neu, '',
-    'So ist mein Spiel jetzt geplant:', ...steckbrief().split('\n').slice(1),
-    'Gib mir wieder das ganze Spiel in einem Codeblock.'].join('\n');
+  const kopf = ['Bitte verbessere mein Spiel. Ändere nur das:', ...neu, ''];
+  return (alles
+    ? [...kopf, 'So ist mein ganzes Spiel jetzt geplant:', ...steckbrief().split('\n').slice(1), 'Gib mir wieder das ganze Spiel in einem Codeblock.']
+    : [...kopf, 'Alles andere bleibt genau so wie in deinem letzten Code. Gib mir wieder das ganze Spiel in einem Codeblock.']).join('\n');
 }
-// In den Chat: den passenden Text in den Zwischenspeicher legen
+// In den Chat: bei Änderungen erst fragen, was in den Zwischenspeicher soll
 function zumChat() {
-  const text = aktuellerText();
+  if (!stand.gesendet || !aenderungen().length) return sende(aktuellerText());
+  const wahl = (wort, bild, klasse, alles) => knopf(wort, bild, klasse, () => sende(aktuellerText(alles)));
+  const klein = wahl('Nur die Änderung', 'reparieren', 'gruen riesig', false);
+  oeffne('Was soll in den Chat?',
+    el('div', { class: 'reihe' }, klein,
+      tonKnopf('Grüner Knopf: nur die Änderung. Das ist meistens richtig. Grauer Knopf: alles noch einmal, wenn der Chat neu ist.', 'Frage')),
+    el('p', { class: 'meldung' }, 'Das ist meistens richtig.'),
+    el('div', { class: 'reihe' }, wahl('Alles noch einmal', 'neu', 'leise', true)),
+    el('p', { class: 'meldung' }, 'Nur wenn der Chat neu ist oder das Spiel ganz anders werden soll.'));
+  klein.focus();
+}
+// Den Text in den Zwischenspeicher legen und den Chat zeigen
+function sende(text) {
   chatOeffnen();
   kopieren(text, $('chatHinweis'));
   Object.assign(stand, { gesendet: steckbrief().split('\n'), letzter: text, probleme: [], aenderung: '' });
