@@ -40,13 +40,23 @@ function leererRahmen() {
 }
 const insSpiel = () => { const f = $('spielRahmen'); f.focus(); try { f.contentWindow.focus(); } catch (e) { /* egal */ } };
 
-// Vollbild innerhalb der Seite: nur das Spiel und ein kleiner Menü-Knopf
+// Vollbild: nur das Spiel und ein kleiner Menü-Knopf. Zusätzlich das echte Vollbild des Geräts,
+// falls der Browser es erlaubt (er verlangt dafür einen frischen Fingertipp).
+const imGeraeteVollbild = () => document.fullscreenElement || document.webkitFullscreenElement;
 function vollbild(an) {
   spiel.classList.toggle('spielt', an);
   $('btnMenue').hidden = !an;
+  const b = $('buehne');
+  try {
+    let p;
+    if (an && !imGeraeteVollbild()) p = (b.requestFullscreen || b.webkitRequestFullscreen)?.call(b);
+    if (!an && imGeraeteVollbild()) p = (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+    if (p) p.then(() => { if (an) insSpiel(); }).catch(() => {});
+  } catch (e) { /* dann bleibt das Vollbild innerhalb der Seite */ }
 }
 function zeigeSpiel() {
   $('einfuegen').hidden = true;
+  $('buehne').hidden = false;
   const f = leererRahmen();
   f.hidden = false;
   f.onload = insSpiel;
@@ -57,6 +67,7 @@ function zeigeSpiel() {
 }
 function zeigeEinfuegen(hinweis = '') {
   leererRahmen();
+  $('buehne').hidden = true;
   $('einfuegen').hidden = false;
   $('codeFeld').value = '';
   $('spielHinweis').textContent = hinweis;
@@ -102,9 +113,10 @@ $('btnMenue').onclick = () => vollbild(false);
 $('btnVoll').onclick = () => { vollbild(true); insSpiel(); };
 $('btnNochmal').onclick = zeigeSpiel;
 $('btnNeuerCode').onclick = einfuegenUndSpielen;
-spiel.addEventListener('close', () => { if (!spiel.open) leererRahmen(); });   // Ton und Zeit stoppen
+spiel.addEventListener('close', () => { if (!spiel.open) { vollbild(false); leererRahmen(); } });   // Ton und Zeit stoppen
 
 $('btnAnsehen').onclick = () => {
+  vollbild(false);
   speicher.set(K_ENTWURF, spielCode);
   leererRahmen();
   $('editorRahmen').src = 'editor/index.html#entwurf';

@@ -14,6 +14,10 @@ Oben stehen immer die drei Schritte **1 Planen → 2 KI-Chat → 3 Spielen**.
 
 Im Chat (lila Rahmen) zeigt die hellblaue Leiste die drei Schritte. Erst mit dem Haken **„Mein Code ist kopiert“** geht **Spiel starten**.
 
+**Ganz ohne Browserleiste:** In Safari auf *Teilen → Zum Home-Bildschirm* tippen und die App über das neue Symbol öffnen.
+
+Der gescannte Chat wird bis zum Ende des Tages gemerkt. **QR-Code** oben rechts im Chat scannt neu.
+
 ## Für Lehrkräfte
 
 Unter **Lehrkraft** stehen die Texte für das Lernszenario im AIS-Chat. Die Technik-Regeln stehen im Szenario, deshalb bleibt der Steckbrief kurz.

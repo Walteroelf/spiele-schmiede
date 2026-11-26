@@ -1,0 +1,17 @@
+{
+  "name": "Spiele-Schmiede",
+  "short_name": "Schmiede",
+  "lang": "de",
+  "start_url": "./",
+  "scope": "./",
+  "display": "fullscreen",
+  "background_color": "#EEF5FA",
+  "theme_color": "#4DB2E6",
+  "icons": [
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

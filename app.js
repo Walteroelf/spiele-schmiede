@@ -328,6 +328,15 @@ function setzeHaken(an) {
   const dritte = $('chatFenster').querySelectorAll('.phase')[2];
   if (dritte) dritte.disabled = !an;
 }
+// Der gescannte Chat wird für heute gemerkt, dann braucht es die Kamera nicht noch einmal
+const K_CHAT = 'spiele-schmiede-chat-heute';
+const heute = () => new Date().toDateString();
+function gemerkterChat() {
+  try {
+    const m = JSON.parse(speicher.get(K_CHAT));
+    return m.tag === heute() ? chatAdresse(m.url) : '';
+  } catch (e) { return ''; }
+}
 function ladeChat(url) {
   stoppeKamera();
   $('chatHinweis').textContent = '';
@@ -366,7 +375,7 @@ async function scanne() {
       const fund = jsQR(g.getImageData(0, 0, bild.width, bild.height).data, bild.width, bild.height);
       if (fund && fund.data) {
         const url = chatAdresse(fund.data);
-        if (url) { ladeChat(url); return; }
+        if (url) { speicher.set(K_CHAT, JSON.stringify({ tag: heute(), url })); ladeChat(url); return; }
         hinweis.textContent = 'Das ist kein Code vom AIS-Chat.';
       }
     }
@@ -380,6 +389,7 @@ function chatOeffnen() {
   if (spiel.open) spiel.close();
   if (!chat.open) chat.showModal();
   if ($('chatRahmen').getAttribute('src')) chatAnsicht('chat');   // ein offener Chat bleibt erhalten
+  else if (gemerkterChat()) ladeChat(gemerkterChat());
   else scanne();
 }
 chat.addEventListener('close', stoppeKamera);
