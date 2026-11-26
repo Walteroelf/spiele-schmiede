@@ -166,12 +166,6 @@ function steckbrief() {
   return zeilen.join('\n');
 }
 
-function weiterKnoepfe() {
-  return el('div', { class: 'reihe' },
-    knopf('2. AIS-Chat öffnen', 'chat', 'gross', chatOeffnen),
-    knopf('3. Spiel starten', 'start', 'gelb gross', () => einfuegenUndSpielen()));
-}
-
 // Bilderablauf oben: gewählte Bilder ersetzen die Schritt-Symbole
 function zeichneAblauf() {
   const stationen = [
@@ -198,14 +192,16 @@ function zeige(fokus) {
   inhalt.replaceChildren();
   zeichneAblauf();
 
+  inhalt.className = s ? 'auswahl' : 'mitte';
+
   if (s) {
     $('frage').textContent = s.frage;
     const kacheln = [...s.wahl, EIGEN].map((w, i) => kachel(w, gewaehlt(s) === w, () => waehle(s, i)));
-    inhalt.append(el('div', { class: 'raster' }, ...kacheln));
+    inhalt.append(raster(kacheln));
     if (gewaehlt(s) === EIGEN) {
       const t = el('textarea', { id: 'eigen', placeholder: 'Meine Idee …', oninput: () => { stand.eigen[s.id] = t.value; merken(); } });
       t.value = stand.eigen[s.id] || '';
-      inhalt.append(el('label', { for: 'eigen' }, el('h3', {}, 'Meine Idee'), 'Schreiben oder diktieren (Mikrofon auf der iPad-Tastatur).'), t);
+      inhalt.append(el('label', { for: 'eigen' }, 'Meine Idee: schreiben oder diktieren'), t);
     }
   } else if (n === SCHRITTE.length) {
     $('frage').textContent = 'Noch ein Wunsch?';
@@ -225,11 +221,13 @@ function zeige(fokus) {
     const text = steckbrief();
     inhalt.append(
       liste,
-      el('div', { class: 'reihe' }, knopf('1. Kopieren', 'kopieren', 'gruen gross', () => kopieren(text, meldung)), tonKnopf(text, 'Steckbrief')),
+      el('div', { class: 'reihe' },
+        knopf('Weiter zum KI-Chat', 'weiter', 'gruen riesig', () => { kopieren(text, meldung); chatOeffnen(); }),
+        tonKnopf(text, 'Steckbrief')),
       meldung,
-      weiterKnoepfe(),
-      el('details', {}, el('summary', {}, 'Text ansehen'), el('pre', {}, text)),
-      el('div', { class: 'reihe' }, knopf('Neues Spiel', 'neu', 'leise', () => { stand = { schritt: 0, wahl: {}, eigen: {}, wunsch: '' }; merken(); zeige(true); }))
+      el('div', { class: 'reihe' },
+        knopf('Text ansehen', 'chat', 'leise', () => oeffne('Dein Text', el('pre', {}, text))),
+        knopf('Neues Spiel planen', 'neu', 'leise', () => { stand = { schritt: 0, wahl: {}, eigen: {}, wunsch: '' }; merken(); zeige(true); }))
     );
   }
 
@@ -237,6 +235,39 @@ function zeige(fokus) {
   $('btnWuerfel').classList.toggle('weg', !s);
   $('btnWeiter').classList.toggle('weg', n === FERTIG);
   if (fokus) { $('frage').focus({ preventScroll: true }); scrollTo(0, 0); }
+}
+
+// Kachelraster, das ohne Scrollen in den Bildschirm passt
+function raster(kacheln) {
+  const n = kacheln.length;
+  const r = el('div', { class: 'raster' }, ...kacheln);
+  const quer = Math.ceil(n / 2), hoch = n <= 4 ? 2 : 3;
+  r.style.setProperty('--quer', quer);
+  r.style.setProperty('--zquer', Math.ceil(n / quer));
+  r.style.setProperty('--hoch', hoch);
+  r.style.setProperty('--zhoch', Math.ceil(n / hoch));
+  return r;
+}
+
+// Drei Schritte, immer an derselben Stelle: Planen → KI-Chat → Spielen
+function zeichnePhasen() {
+  document.querySelectorAll('.phasen').forEach(leiste => {
+    const aktiv = Number(leiste.dataset.aktiv);
+    leiste.replaceChildren(...[['idee', 'Planen'], ['chat', 'KI-Chat'], ['start', 'Spielen']].map(([bild, wort], i) => {
+      const b = el('button', { type: 'button', class: 'phase', onclick: () => zurPhase(i + 1, aktiv) });
+      if (i + 1 === aktiv) b.setAttribute('aria-current', 'step');
+      b.innerHTML = `<b>${i + 1}</b>${symbol(bild)}`;
+      b.append(el('span', {}, wort));
+      return b;
+    }));
+  });
+}
+function zurPhase(ziel, von) {
+  if (ziel === von) return;
+  if (ziel === 1) { if (chat.open) chat.close(); if (spiel.open) spiel.close(); }
+  else if (ziel === 2) chatOeffnen();
+  else if (von === 2) einfuegenUndSpielen();   // aus dem Chat: kopierten Code gleich starten
+  else mein();
 }
 
 function gehe(n) {
@@ -275,20 +306,25 @@ function stoppeKamera() {
   video.srcObject = null;
   $('scanner').hidden = true;
 }
+// Immer nur das zeigen, was gerade dran ist
+function chatAnsicht(was) {
+  $('scanner').hidden = was !== 'scanner';
+  $('keinChat').hidden = was !== 'keinChat';
+  $('chatRahmen').hidden = $('anleitung').hidden = was !== 'chat';
+  $('btnCode').hidden = was === 'chat';
+}
 function ladeChat(url) {
   stoppeKamera();
   $('chatHinweis').textContent = '';
   $('chatRahmen').src = url;
-  $('chatRahmen').hidden = false;
-  $('chatTab').href = url;
+  chatAnsicht('chat');
 }
 async function scanne() {
   stoppeKamera();
   const nr = scanNr;
   const hinweis = $('chatHinweis');
-  $('chatRahmen').hidden = true;
-  $('scanner').hidden = false;
-  hinweis.textContent = 'Halte den QR-Code vor die Kamera.';
+  chatAnsicht('scanner');
+  hinweis.textContent = '';
   let s;
   try {
     s = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false });
@@ -299,7 +335,8 @@ async function scanne() {
   } catch (e) {
     if (nr !== scanNr) return;
     stoppeKamera();
-    hinweis.textContent = 'Die Kamera geht nicht. Erlaube die Kamera oder tippe auf „Code tippen“.';
+    chatAnsicht('keinChat');
+    hinweis.textContent = 'Die Kamera geht nicht. Erlaube die Kamera oder tippe den Code ein.';
     vorlesen(hinweis.textContent);
     return;
   }
@@ -325,16 +362,17 @@ async function scanne() {
 function chatOeffnen() {
   if ('speechSynthesis' in window) speechSynthesis.cancel();
   if (fenster.open) fenster.close();
-  chat.showModal();
-  if (!$('chatRahmen').getAttribute('src')) scanne();   // ein offener Chat bleibt erhalten
+  if (spiel.open) spiel.close();
+  if (!chat.open) chat.showModal();
+  if ($('chatRahmen').getAttribute('src')) chatAnsicht('chat');   // ein offener Chat bleibt erhalten
+  else scanne();
 }
 chat.addEventListener('close', stoppeKamera);
-document.addEventListener('visibilitychange', () => { if (document.hidden && strom) { stoppeKamera(); $('chatHinweis').textContent = 'Tippe auf „QR-Code scannen“.'; } });
-$('btnChat').onclick = chatOeffnen;
+document.addEventListener('visibilitychange', () => { if (document.hidden && strom) { stoppeKamera(); chatAnsicht('keinChat'); } });
+$('btnNeuScan').onclick = scanne;
 $('btnScan').onclick = scanne;
 $('btnCode').onclick = () => ladeChat(CHAT_URL);
 $('btnSteckbrief').onclick = () => kopieren(steckbrief(), $('chatHinweis'));
-$('chatZu').onclick = () => chat.close();
 
 // ---------- Fenster ----------
 const fenster = $('fenster');
@@ -377,13 +415,13 @@ addEventListener('keyup', tastenEreignis);
 function hilfe() {
   const aktiv = new Set();
   const meldung = el('p', { class: 'meldung', role: 'status' });
-  const raster = el('div', { class: 'raster' });
-  const zeichne = () => raster.replaceChildren(...FEHLER.map((f, i) => kachel(f, aktiv.has(i), () => {
+  const bilder = el('div', { class: 'raster fehler' });
+  const zeichne = () => bilder.replaceChildren(...FEHLER.map((f, i) => kachel(f, aktiv.has(i), () => {
     aktiv.has(i) ? aktiv.delete(i) : aktiv.add(i);
     meldung.textContent = '';
     vorlesen(f[1]);
     zeichne();
-    raster.querySelectorAll('.wahl')[i].focus({ preventScroll: true });
+    bilder.querySelectorAll('.wahl')[i].focus({ preventScroll: true });
   })));
   zeichne();
   const mehr = el('textarea', { id: 'mehr', placeholder: 'Was soll anders sein?' });
@@ -393,8 +431,8 @@ function hilfe() {
     if (!probleme.length) { meldung.textContent = 'Tippe zuerst auf ein Bild.'; vorlesen(meldung.textContent); return; }
     kopieren(`Bitte verbessere mein Spiel:\n${probleme.join('\n')}\nGib mir wieder das ganze Spiel in einem Codeblock.`, meldung);
   };
-  oeffne('Was klappt nicht?', raster, el('h3', {}, el('label', { for: 'mehr' }, 'Noch etwas?')), mehr,
-    el('div', { class: 'reihe' }, knopf('Kopieren', 'kopieren', 'gruen gross', kopiere), knopf('AIS-Chat öffnen', 'chat', 'gross', chatOeffnen)), meldung,
+  oeffne('Was klappt nicht?', bilder, el('h3', {}, el('label', { for: 'mehr' }, 'Noch etwas?')), mehr,
+    el('div', { class: 'reihe' }, knopf('Kopieren', 'kopieren', 'gruen gross', kopiere), knopf('Zum KI-Chat', 'chat', 'gross', chatOeffnen)), meldung,
     el('p', {}, 'Füge den Text im selben Chat ein, in dem dein Spiel entstanden ist.'));
 }
 
@@ -420,7 +458,8 @@ $('btnWuerfel').onclick = () => {
   waehle(s, andere[Math.floor(Math.random() * andere.length)]);
 };
 $('btnTasten').onclick = tastenTest;
-$('btnHilfe').onclick = hilfe;
+$('btnKaputt').onclick = hilfe;
 $('btnLehrer').onclick = lehrkraft;
 $('fensterZu').onclick = () => fenster.close();
+zeichnePhasen();
 zeige(false);

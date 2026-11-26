@@ -46,7 +46,7 @@ function zeigeSpiel() {
   f.hidden = false;
   f.onload = insSpiel;
   f.srcdoc = mitErsatz(spielCode);
-  for (const id of ['btnNochmal', 'btnNeuerCode', 'btnAnsehen']) $(id).hidden = false;
+  $('werkzeug').hidden = $('tippHinweis').hidden = false;
   insSpiel();
 }
 function zeigeEinfuegen(hinweis = '') {
@@ -54,7 +54,7 @@ function zeigeEinfuegen(hinweis = '') {
   $('einfuegen').hidden = false;
   $('codeFeld').value = '';
   $('spielHinweis').textContent = hinweis;
-  for (const id of ['btnNochmal', 'btnNeuerCode', 'btnAnsehen']) $(id).hidden = true;
+  $('werkzeug').hidden = $('tippHinweis').hidden = true;
   $('btnAltes').hidden = !spielCode;
   if (hinweis) vorlesen(hinweis);
 }
@@ -88,12 +88,10 @@ $('codeFeld').addEventListener('paste', e => {
   if (text) { e.preventDefault(); uebernehmen(text); }
 });
 $('codeFeld').addEventListener('input', e => { if (/<\/html>/i.test(e.target.value)) uebernehmen(e.target.value); });
-$('btnSpiel').onclick = () => { spielOeffnen(); spielCode ? zeigeSpiel() : zeigeEinfuegen(); };
+const mein = () => { spielOeffnen(); spielCode ? zeigeSpiel() : zeigeEinfuegen(); };
 $('btnAltes').onclick = zeigeSpiel;
 $('btnNochmal').onclick = zeigeSpiel;
 $('btnNeuerCode').onclick = einfuegenUndSpielen;
-$('btnZumChat').onclick = () => { spiel.close(); chatOeffnen(); };
-$('spielZu').onclick = () => spiel.close();
 spiel.addEventListener('close', () => { if (!spiel.open) leererRahmen(); });   // Ton und Zeit stoppen
 
 $('btnAnsehen').onclick = () => {
