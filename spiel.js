@@ -115,7 +115,6 @@ for (const art of ['fullscreenchange', 'webkitfullscreenchange']) {
 }
 $('btnVoll').onclick = () => { vollbild(true); insSpiel(); };
 $('btnNochmal').onclick = zeigeSpiel;
-$('btnNeuerCode').onclick = einfuegenUndSpielen;
 spiel.addEventListener('close', () => { if (!spiel.open) { vollbild(false); leererRahmen(); } });   // Ton und Zeit stoppen
 
 $('btnAnsehen').onclick = () => {

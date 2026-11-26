@@ -8,7 +8,7 @@ Prompt-Helfer mit Bildern: Kinder planen ein HTML-Spiel für das MakeyMakey, auc
 
 Oben stehen immer die drei Schritte **1 Planen → 2 KI-Chat → 3 Spielen**.
 
-1. In der Spiele-Schmiede Bilder antippen (Spiel, Figur, Ort, Punkte, Ziel, Kontakte, Tempo) oder jeweils eine eigene Idee eingeben.
+1. In der Spiele-Schmiede Bilder antippen (Spiel, Figur, Ort, Punkte, Fehler, Ziel, Kontakte, Knöpfe, Schwierigkeit, Tempo) oder jeweils eine eigene Idee eingeben.
 2. Steckbrief kopieren, **AIS-Chat öffnen**, den QR-Code des Lernszenarios scannen und den Text einfügen. Der Chat erscheint in der App.
 3. Code kopieren und **Spiel starten** tippen: Das Spiel startet im Vollbild, das kleine **×** oben rechts beendet es. **Code ansehen** öffnet den eingebauten Editor (Kopie des [HTML-Editors](https://github.com/Walteroelf/html-editor) in `editor/`, mit eigenem Speicher).
 
@@ -22,7 +22,7 @@ Der gescannte Chat wird bis zum Ende des Tages gemerkt. **QR-Code** oben rechts 
 
 Unter **Lehrkraft** stehen die Texte für das Lernszenario im AIS-Chat. Die Technik-Regeln stehen im Szenario, deshalb bleibt der Steckbrief kurz.
 
-Außerdem gibt es einen **Tasten-Test** für das MakeyMakey und **Klappt nicht**, das mit Bildern einen Verbesserungs-Text baut.
+Außerdem gibt es einen **Tasten-Test** für das MakeyMakey und beim Spiel **Code überarbeiten**, das mit Bildern einen Verbesserungs-Text baut und zurück in den Chat führt.
 
 ## Datenschutz
 

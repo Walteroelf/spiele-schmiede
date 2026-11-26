@@ -24,17 +24,34 @@ const SCHRITTE = [
     ['stern', 'Sterne', 'Sterne'], ['apfel', 'Äpfel', 'Äpfel'], ['herz', 'Herzen', 'Herzen'],
     ['muenze', 'Münzen', 'Münzen'], ['banane', 'Bananen', 'Bananen'], ['eis', 'Eis', 'Eis']
   ] },
+  { id: 'gefahr', symbol: 'stein', frage: 'Was ist ein Fehler?', zeile: 'Ein Fehler passiert durch', wahl: [
+    ['stein', 'Steine', 'Steine, die ich berühre'], ['himmel', 'Wolken', 'Wolken, die ich berühre'], ['roboter', 'Gegner', 'Gegner, die mich fangen'],
+    ['daneben', 'Daneben', 'Daneben liegen oder etwas verpassen'], ['haken', 'Keine Fehler', 'nichts. Es gibt keine Fehler.']
+  ] },
+  { id: 'leben', symbol: 'herz', frage: 'Was passiert bei einem Fehler?', zeile: 'Bei einem Fehler', wahl: [
+    ['herz', '3 Leben', 'verliere ich 1 von 3 Leben. Ohne Leben ist das Spiel verloren.'],
+    ['herzen', '5 Leben', 'verliere ich 1 von 5 Leben. Ohne Leben ist das Spiel verloren.'],
+    ['minus', 'Punkt weg', 'verliere ich 1 Punkt. Zähle die Fehler und zeige sie an.'],
+    ['neu', 'Von vorn', 'beginnt das Spiel von vorn.'],
+    ['haken', 'Nichts', 'passiert nichts Schlimmes. Ich kann nicht verlieren.']
+  ] },
   { id: 'ziel', symbol: 'punkte', frage: 'Wann hast du gewonnen?', zeile: 'Ziel', wahl: [
-    ['drei', '3 Punkte', 'Bei 3 Punkten habe ich gewonnen. Ich kann nicht verlieren.'],
-    ['zehn', '10 Punkte', 'Bei 10 Punkten habe ich gewonnen. Ich habe 3 Leben.'],
+    ['drei', '3 Punkte', 'Bei 3 Punkten habe ich gewonnen.'],
+    ['zehn', '10 Punkte', 'Bei 10 Punkten habe ich gewonnen.'],
     ['uhr', '1 Minute', 'Ich sammle in 1 Minute so viele Punkte wie möglich.'],
-    ['unendlich', 'Ohne Ende', 'Das Spiel hat kein Ende. Ich kann nicht verlieren.']
+    ['unendlich', 'Ohne Ende', 'Das Spiel hat kein festes Ende. Ich höre selbst mit dem Beenden-Knopf auf.']
   ] },
   { id: 'tasten', symbol: 'tasten', frage: 'Wie viele Kontakte benutzt du?', zeile: 'Steuerung', wahl: [
     ['leer', '1 Kontakt', 'nur die Leertaste. Das ganze Spiel geht mit dieser einen Taste.'],
     ['zwei', '2 Kontakte', 'nur Pfeil links und Pfeil rechts. Keine anderen Tasten, auch nicht zum Starten.'],
     ['vier', '4 Kontakte', 'nur die vier Pfeiltasten. Keine anderen Tasten, auch nicht zum Starten.'],
     ['alle', '5 Kontakte', 'die vier Pfeiltasten und die Leertaste.']
+  ] },
+  { id: 'knoepfe', symbol: 'pause', frage: 'Welche Knöpfe? Du darfst mehrere antippen.', zeile: 'Große Knöpfe im Spiel zum Antippen', mehrfach: true, wahl: [
+    ['pause', 'Pause', 'Pause und Weiter'], ['neu', 'Neu starten', 'Neu starten'], ['kreuz', 'Beenden', 'Beenden (zurück zum Startbild)'], ['ton', 'Ton an/aus', 'Ton an und aus']
+  ] },
+  { id: 'level', symbol: 'treppe', frage: 'Wird es schwerer?', zeile: 'Schwierigkeit', wahl: [
+    ['gleich', 'Bleibt gleich', 'bleibt immer gleich'], ['treppe', '3 Level', 'drei Level, jedes etwas schwerer. Zeige das Level an.'], ['schnell', 'Immer schneller', 'wird nach und nach schneller']
   ] },
   { id: 'tempo', symbol: 'schnell', frage: 'Wie schnell?', zeile: 'Tempo', wahl: [
     ['langsam', 'Langsam', 'sehr langsam'], ['mittel', 'Mittel', 'mittel'], ['schnell', 'Schnell', 'schnell, es wird langsam schneller']
@@ -50,7 +67,10 @@ const FEHLER = [
   ['langsam', 'Zu langsam', 'Das Spiel ist zu langsam.'],
   ['schwer', 'Zu schwer', 'Das Spiel ist zu schwer. Mach es leichter.'],
   ['stumm', 'Kein Ton', 'Ich höre keine Töne.'],
-  ['punkte', 'Punkte falsch', 'Die Punkte werden nicht richtig gezählt.']
+  ['punkte', 'Punkte falsch', 'Die Punkte werden nicht richtig gezählt.'],
+  ['herz', 'Keine Fehler', 'Fehler werden nicht gezählt. Zeige Leben oder Fehlerpunkte groß oben an und zähle sie richtig.'],
+  ['kreuz', 'Knöpfe fehlen', 'Ich brauche große Knöpfe zum Antippen: Pause, Neu starten und Beenden.'],
+  ['uhr', 'Hört nie auf', 'Das Spiel läuft einfach durch. Es braucht ein klares Ende mit „Gewonnen“ oder „Verloren“ und einen Knopf zum Nochmalspielen.']
 ];
 
 const SZENARIO = [
@@ -93,11 +113,13 @@ const speicher = {
   set(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* privates Fenster */ } }
 };
 
-let stand = { schritt: 0, wahl: {}, eigen: {}, wunsch: '' };
+const neuerStand = () => ({ schritt: 0, wahl: { knoepfe: ['neu', 'kreuz'] }, eigen: {}, wunsch: '' });
+let stand = neuerStand();
 try {
   const s = JSON.parse(speicher.get('spiele-schmiede'));
   if (s && s.wahl) stand = { schritt: Math.min(Math.max(s.schritt | 0, 0), FERTIG), wahl: s.wahl, eigen: s.eigen || {}, wunsch: String(s.wunsch || '') };
 } catch (e) { /* neu anfangen */ }
+if (!Array.isArray(stand.wahl.knoepfe)) stand.wahl.knoepfe = ['neu', 'kreuz'];
 const merken = () => speicher.set('spiele-schmiede', JSON.stringify(stand));
 
 function el(tag, attr = {}, ...kinder) {
@@ -152,7 +174,18 @@ function kachel(eintrag, gedrueckt, aktion) {
 
 const EIGEN = ['idee', 'Eigene Idee'];
 const eigenText = s => String(stand.eigen[s.id] || '').trim();
-const gewaehlt = s => stand.wahl[s.id] === 'eigen' ? EIGEN : s.wahl.find(w => w[0] === stand.wahl[s.id]);
+const ist = (s, w) => {
+  const v = stand.wahl[s.id], id = w === EIGEN ? 'eigen' : w[0];
+  return s.mehrfach ? Array.isArray(v) && v.includes(id) : v === id;
+};
+// Das Gewählte als [Symbol, Wort, Satzteil]; bei mehreren zusammengefasst
+function gewaehlt(s) {
+  const liste = [...s.wahl, EIGEN].filter(w => ist(s, w));
+  if (!liste.length) return null;
+  if (!s.mehrfach || (liste.length === 1 && liste[0] === EIGEN)) return liste[0];
+  return [liste[0][0], liste.length > 1 ? `${liste.length} Knöpfe` : liste[0][1],
+    liste.map(w => w === EIGEN ? eigenText(s) : w[2]).filter(Boolean).join(', ')];
+}
 
 function steckbrief() {
   const zeilen = ['Mein Spiel-Steckbrief. Bitte baue mir daraus sofort das Spiel.'];
@@ -162,6 +195,7 @@ function steckbrief() {
     zeilen.push(`${s.zeile}: ${satz || 'such du etwas Passendes aus'}`);
   }
   if (stand.wunsch.trim()) zeilen.push('Das wünsche ich mir noch: ' + stand.wunsch.trim());
+  zeilen.push('Wichtig: Zeige Punkte und Leben oder Fehler groß oben an. Am Ende kommt „Gewonnen“ oder „Verloren“ mit einem Knopf zum Nochmalspielen. Vor dem Start erklärt ein Startbild die Steuerung mit Bildern.');
   return zeilen.join('\n');
 }
 
@@ -195,9 +229,9 @@ function zeige(fokus) {
 
   if (s) {
     $('frage').textContent = s.frage;
-    const kacheln = [...s.wahl, EIGEN].map((w, i) => kachel(w, gewaehlt(s) === w, () => waehle(s, i)));
+    const kacheln = [...s.wahl, EIGEN].map((w, i) => kachel(w, ist(s, w), () => waehle(s, i)));
     inhalt.append(raster(kacheln));
-    if (gewaehlt(s) === EIGEN) {
+    if (ist(s, EIGEN)) {
       const t = el('textarea', { id: 'eigen', placeholder: 'Meine Idee …', oninput: () => { stand.eigen[s.id] = t.value; merken(); } });
       t.value = stand.eigen[s.id] || '';
       inhalt.append(el('label', { for: 'eigen' }, 'Meine Idee: schreiben oder diktieren'), t);
@@ -226,7 +260,7 @@ function zeige(fokus) {
       meldung,
       el('div', { class: 'reihe' },
         knopf('Text ansehen', 'chat', 'leise', () => oeffne('Dein Text', el('pre', {}, text))),
-        knopf('Neues Spiel planen', 'neu', 'leise', () => { stand = { schritt: 0, wahl: {}, eigen: {}, wunsch: '' }; merken(); zeige(true); }))
+        knopf('Neues Spiel planen', 'neu', 'leise', () => { stand = neuerStand(); merken(); zeige(true); }))
     );
   }
 
@@ -276,10 +310,14 @@ function gehe(n) {
 }
 function waehle(s, i) {
   const w = [...s.wahl, EIGEN][i];
-  stand.wahl[s.id] = w === EIGEN ? 'eigen' : w[0];
+  const id = w === EIGEN ? 'eigen' : w[0];
+  if (s.mehrfach) {
+    const v = stand.wahl[s.id] || [];
+    stand.wahl[s.id] = v.includes(id) ? v.filter(x => x !== id) : [...v, id];
+  } else stand.wahl[s.id] = id;
   merken();
   zeige(false);
-  if (w === EIGEN) $('eigen').focus();
+  if (w === EIGEN && ist(s, w)) $('eigen').focus();
   else $('inhalt').querySelectorAll('.wahl')[i].focus({ preventScroll: true });
 }
 
@@ -454,15 +492,15 @@ function hilfe() {
   })));
   zeichne();
   const mehr = el('textarea', { id: 'mehr', placeholder: 'Was soll anders sein?' });
-  const kopiere = () => {
+  const abschicken = () => {
     const probleme = FEHLER.filter((f, i) => aktiv.has(i)).map(f => '- ' + f[2]);
     if (mehr.value.trim()) probleme.push('- ' + mehr.value.trim());
     if (!probleme.length) { meldung.textContent = 'Tippe zuerst auf ein Bild.'; return; }
     kopieren(`Bitte verbessere mein Spiel:\n${probleme.join('\n')}\nGib mir wieder das ganze Spiel in einem Codeblock.`, meldung);
+    chatOeffnen();
   };
-  oeffne('Was klappt nicht?', bilder, el('h3', {}, el('label', { for: 'mehr' }, 'Noch etwas?')), mehr,
-    el('div', { class: 'reihe' }, knopf('Kopieren', 'kopieren', 'gruen gross', kopiere), knopf('Zum KI-Chat', 'chat', 'gross', chatOeffnen)), meldung,
-    el('p', {}, 'Füge den Text im selben Chat ein, in dem dein Spiel entstanden ist.'));
+  oeffne('Was soll anders sein?', bilder, el('h3', {}, el('label', { for: 'mehr' }, 'Noch etwas?')), mehr,
+    el('div', { class: 'reihe' }, knopf('Weiter zum KI-Chat', 'weiter', 'gruen gross', abschicken)), meldung);
 }
 
 function lehrkraft() {
