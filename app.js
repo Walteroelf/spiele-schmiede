@@ -1,7 +1,7 @@
 'use strict';
 
 // Jede Wahl: [Symbol, Wort auf der Kachel, Satzteil für den Prompt]
-const SCHRITTE = [
+const BASIS = [
   { id: 'spiel', symbol: 'fangen', frage: 'Was für ein Spiel?', zeile: 'Mein Spiel', wahl: [
     ['fangen', 'Fangen', 'Fang-Spiel: Dinge fallen von oben, meine Figur fängt sie'],
     ['ausweichen', 'Ausweichen', 'Ausweich-Spiel: Hindernisse kommen, meine Figur weicht aus'],
@@ -112,7 +112,26 @@ Regeln für jedes Spiel:
 ];
 
 const CHAT_URL = 'https://app.ais-chat.schule/login';
-const FERTIG = SCHRITTE.length + 1;           // 0 … n-1 Auswahl, n Wunsch, n+1 Steckbrief
+let SCHRITTE = BASIS;                         // je nach Modus (Standard oder Profi)
+let FERTIG = SCHRITTE.length + 1;             // 0 … n-1 Auswahl, n Wunsch, n+1 Steckbrief
+function setzeModus() {
+  if (!stand.profi) SCHRITTE = BASIS;
+  else {
+    SCHRITTE = BASIS.map(s => ({ ...s, wahl: [...s.wahl, ...(PROFI_WAHL[s.id] || [])] }));
+    for (const { nach, s } of PROFI_SCHRITTE) SCHRITTE.splice(SCHRITTE.findIndex(x => x.id === nach) + 1, 0, s);
+  }
+  FERTIG = SCHRITTE.length + 1;
+}
+function wechsleModus(profi) {
+  if (!!stand.profi === profi) return;
+  const n = stand.schritt, id = SCHRITTE[n]?.id, ende = n - SCHRITTE.length;
+  stand.profi = profi;
+  setzeModus();
+  const i = SCHRITTE.findIndex(s => s.id === id);
+  stand.schritt = !id ? SCHRITTE.length + ende : Math.max(i, 0);   // am selben Schritt bleiben
+  merken();
+  zeige(false);
+}
 const $ = id => document.getElementById(id);
 
 const speicher = {
@@ -120,15 +139,18 @@ const speicher = {
   set(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* privates Fenster */ } }
 };
 
-const neuerStand = () => ({ schritt: 0, wahl: { knoepfe: ['neu', 'kreuz'] }, eigen: {}, wunsch: '', probleme: [], aenderung: '', gesendet: null, letzter: '' });
+const neuerStand = () => ({ schritt: 0, wahl: { knoepfe: ['neu', 'kreuz'] }, eigen: {}, wunsch: '', probleme: [], aenderung: '', gesendet: null, letzter: '', profi: false });
 let stand = neuerStand();
 try {
   const s = JSON.parse(speicher.get('spiele-schmiede'));
-  if (s && s.wahl) stand = { schritt: Math.min(Math.max(s.schritt | 0, 0), FERTIG), wahl: s.wahl, eigen: s.eigen || {}, wunsch: String(s.wunsch || ''),
+  if (s && s.wahl) stand = { schritt: Math.max(s.schritt | 0, 0), wahl: s.wahl, eigen: s.eigen || {}, wunsch: String(s.wunsch || ''),
     probleme: Array.isArray(s.probleme) ? s.probleme : [], aenderung: String(s.aenderung || ''),
-    gesendet: Array.isArray(s.gesendet) ? s.gesendet : null, letzter: String(s.letzter || '') };
+    gesendet: Array.isArray(s.gesendet) ? s.gesendet : null, letzter: String(s.letzter || ''), profi: s.profi === true };
 } catch (e) { /* neu anfangen */ }
 if (!Array.isArray(stand.wahl.knoepfe)) stand.wahl.knoepfe = ['neu', 'kreuz'];
+for (const { s } of PROFI_SCHRITTE) if (s.mehrfach && !Array.isArray(stand.wahl[s.id])) delete stand.wahl[s.id];
+setzeModus();
+stand.schritt = Math.min(stand.schritt, FERTIG);
 const merken = () => speicher.set('spiele-schmiede', JSON.stringify(stand));
 
 function el(tag, attr = {}, ...kinder) {
@@ -192,7 +214,7 @@ function gewaehlt(s) {
   const liste = [...s.wahl, EIGEN].filter(w => ist(s, w));
   if (!liste.length) return null;
   if (!s.mehrfach || (liste.length === 1 && liste[0] === EIGEN)) return liste[0];
-  return [liste[0][0], liste.length > 1 ? `${liste.length} Knöpfe` : liste[0][1],
+  return [liste[0][0], liste.length > 1 ? `${liste.length} gewählt` : liste[0][1],
     liste.map(w => w === EIGEN ? eigenText(s) : w[2]).filter(Boolean).join(', ')];
 }
 
@@ -230,6 +252,7 @@ function steckbrief() {
     zeilen.push(`${s.zeile}: ${satz || 'such du etwas Passendes aus'}`);
   }
   if (stand.wunsch.trim()) zeilen.push('Das wünsche ich mir noch: ' + stand.wunsch.trim());
+  if (stand.profi) zeilen.push(PROFI_AUFTRAG);
   zeilen.push('Wichtig: Zeige Punkte und Leben oder Fehler groß oben an. Am Ende kommt „Gewonnen“ oder „Verloren“ mit einem Knopf zum Nochmalspielen. Vor dem Start erklärt ein Startbild die Steuerung mit Bildern.');
   return zeilen.join('\n');
 }
@@ -256,6 +279,7 @@ function zeichneAblauf() {
 }
 
 function zeige(fokus) {
+  document.querySelectorAll('.modus button').forEach(b => b.setAttribute('aria-pressed', String((b.id === 'btnProfi') === !!stand.profi)));
   const n = stand.schritt;
   const s = SCHRITTE[n];
   const inhalt = $('inhalt');
@@ -300,7 +324,7 @@ function zeige(fokus) {
   } else {
     $('frage').textContent = aenderungen().length ? 'Deine Änderung ist bereit!' : 'Dein Spiel ist geplant!';
     const meldung = el('p', { class: 'meldung', role: 'status' });
-    const liste = el('ul', { class: 'zettel' }, ...SCHRITTE.map((x, i) => {
+    const liste = el('ul', { class: stand.profi ? 'zettel viele' : 'zettel' }, ...SCHRITTE.map((x, i) => {
       const w = gewaehlt(x);
       const b = el('button', { type: 'button', 'aria-label': `${x.frage} ${w ? w[1] : 'offen'}. Ändern`, onclick: () => gehe(i) });
       b.innerHTML = symbol(w ? w[0] : 'quiz');
@@ -316,7 +340,7 @@ function zeige(fokus) {
       meldung,
       el('div', { class: 'reihe' },
         knopf('Text ansehen', 'chat', 'leise', () => oeffne('Dein Text', el('pre', {}, text))),
-        knopf('Neues Spiel planen', 'neu', 'leise', () => { stand = neuerStand(); merken(); zeige(true); }))
+        knopf('Neues Spiel planen', 'neu', 'leise', () => { stand = { ...neuerStand(), profi: stand.profi }; setzeModus(); merken(); zeige(true); }))
     );
   }
 
@@ -329,7 +353,7 @@ function zeige(fokus) {
 function raster(kacheln) {
   const n = kacheln.length;
   const r = el('div', { class: 'raster' }, ...kacheln);
-  const quer = Math.ceil(n / 2), hoch = n <= 4 ? 2 : 3;
+  const quer = Math.ceil(n / (n > 12 ? 3 : 2)), hoch = n <= 4 ? 2 : n > 12 ? 4 : 3;
   r.style.setProperty('--quer', quer);
   r.style.setProperty('--zquer', Math.ceil(n / quer));
   r.style.setProperty('--hoch', hoch);
@@ -571,6 +595,8 @@ $('frageTon').onclick = () => vorlesen($('frage').textContent);
 $('btnZurueck').onclick = () => gehe(stand.schritt - 1);
 $('btnWeiter').onclick = () => gehe(stand.schritt + 1);
 $('btnTasten').onclick = tastenTest;
+$('btnStandard').onclick = () => wechsleModus(false);
+$('btnProfi').onclick = () => wechsleModus(true);
 $('btnKaputt').onclick = ueberarbeiten;
 $('btnLehrer').onclick = lehrkraft;
 $('fensterZu').onclick = () => fenster.close();

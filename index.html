@@ -8,14 +8,18 @@
 <link rel="apple-touch-icon" href="icon-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Schmiede">
-<link rel="stylesheet" href="design.css?v=17">
-<link rel="stylesheet" href="style.css?v=17">
+<link rel="stylesheet" href="design.css?v=18">
+<link rel="stylesheet" href="style.css?v=18">
 </head>
 <body>
 <header>
   <h1>Spiele-Schmiede</h1>
   <div class="phasen" data-aktiv="1"></div>
   <nav>
+    <div class="modus" role="group" aria-label="Stufe">
+      <button type="button" id="btnStandard" aria-pressed="true">Standard</button>
+      <button type="button" id="btnProfi" aria-pressed="false">Profi</button>
+    </div>
     <button class="knopf leise" id="btnTasten" data-symbol="tasten">Tasten-Test</button>
     <button class="knopf leise" id="btnLehrer" data-symbol="zahnrad">Lehrkraft</button>
   </nav>
@@ -106,8 +110,9 @@
 
 <noscript>Diese App braucht JavaScript.</noscript>
 <script src="vendor/jsQR.js"></script>
-<script src="symbole.js?v=17"></script>
-<script src="app.js?v=17"></script>
-<script src="spiel.js?v=17"></script>
+<script src="symbole.js?v=18"></script>
+<script src="profi.js?v=18"></script>
+<script src="app.js?v=18"></script>
+<script src="spiel.js?v=18"></script>
 </body>
 </html>

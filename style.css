@@ -172,3 +172,12 @@ dialog.spielt[open] { padding: 0; gap: 0; }
 #inhalt .raster.fehler { flex: none; max-height: none; margin: 0; grid-template-rows: none; grid-auto-rows: 100px; }
 #wunsch.kurz { height: 72px; flex: none; }
 @media (orientation: portrait) { .raster.fehler { grid-template-columns: repeat(4, minmax(0, 1fr)); grid-template-rows: none; } }
+
+/* ---------- Standard oder Profi ---------- */
+.modus { display: flex; border: 2px solid var(--dunkelblau); border-radius: 999px; overflow: hidden; background: var(--weiss); }
+.modus button { min-height: 38px; padding: 0 12px; border: 0; background: transparent; color: var(--dunkelblau); font-size: 14px; font-weight: 700; }
+.modus button[aria-pressed="true"] { background: var(--dunkelblau); color: var(--weiss); }
+.zettel.viele { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 4px; }
+.zettel.viele button { min-height: 40px; padding: 2px 6px; font-size: 12px; }
+.zettel.viele svg { width: 22px; height: 22px; }
+.zettel.viele span { -webkit-line-clamp: 1; }

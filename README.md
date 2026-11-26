@@ -18,6 +18,8 @@ Im Chat (lila Rahmen) zeigt die hellblaue Leiste die drei Schritte. Erst mit dem
 
 Der gescannte Chat wird bis zum Ende des Tages gemerkt. **QR-Code** oben rechts im Chat scannt neu.
 
+Oben rechts lässt sich zwischen **Standard** und **Profi** wechseln. Profi hat mehr Spielarten und zusätzliche Schritte zu Bewegung, Aktionen, Gegnern, Extras, Anzeigen, Spielern, Grafik, Effekten, Klang und Bildschirmen (`profi.js`).
+
 ## Für Lehrkräfte
 
 Unter **Lehrkraft** stehen die Texte für das Lernszenario im AIS-Chat. Die Technik-Regeln stehen im Szenario, deshalb bleibt der Steckbrief kurz.
