@@ -45,7 +45,7 @@ const insSpiel = () => { const f = $('spielRahmen'); f.focus(); try { f.contentW
 const imGeraeteVollbild = () => document.fullscreenElement || document.webkitFullscreenElement;
 function vollbild(an) {
   spiel.classList.toggle('spielt', an);
-  $('btnMenue').hidden = !an;
+  $('btnKlein').hidden = !an;
   const b = $('buehne');
   try {
     let p;
@@ -109,7 +109,11 @@ $('codeFeld').addEventListener('paste', e => {
 $('codeFeld').addEventListener('input', e => { if (/<\/html>/i.test(e.target.value)) uebernehmen(e.target.value); });
 const mein = () => { spielOeffnen(); spielCode ? zeigeSpiel() : zeigeEinfuegen(); };
 $('btnAltes').onclick = zeigeSpiel;
-$('btnMenue').onclick = () => vollbild(false);
+$('btnKlein').onclick = () => vollbild(false);
+// Auch wenn das Vollbild über das iPad selbst beendet wird, kommt die Leiste zurück
+for (const art of ['fullscreenchange', 'webkitfullscreenchange']) {
+  document.addEventListener(art, () => { if (!imGeraeteVollbild() && spiel.classList.contains('spielt')) vollbild(false); });
+}
 $('btnVoll').onclick = () => { vollbild(true); insSpiel(); };
 $('btnNochmal').onclick = zeigeSpiel;
 $('btnNeuerCode').onclick = einfuegenUndSpielen;
