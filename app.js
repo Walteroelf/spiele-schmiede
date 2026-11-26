@@ -112,9 +112,11 @@ Regeln für jedes Spiel:
 ];
 
 const CHAT_URL = 'https://app.ais-chat.schule/login';
+const EIGEN = ['idee', 'Eigene Idee'];
 let SCHRITTE = BASIS;                         // je nach Modus (Standard oder Profi)
 let FERTIG = SCHRITTE.length + 1;             // 0 … n-1 Auswahl, n Wunsch, n+1 Steckbrief
 function setzeModus() {
+  EIGEN[1] = stand.profi ? 'Selbst erfinden' : 'Eigene Idee';
   if (!stand.profi) SCHRITTE = BASIS;
   else {
     SCHRITTE = BASIS.map(s => ({ ...s, wahl: [...s.wahl, ...(PROFI_WAHL[s.id] || [])] }));
@@ -203,7 +205,6 @@ function kachel(eintrag, gedrueckt, aktion) {
   return el('div', { class: 'kachel' }, b, tonKnopf(wort, wort));
 }
 
-const EIGEN = ['idee', 'Eigene Idee'];
 const eigenText = s => String(stand.eigen[s.id] || '').trim();
 const ist = (s, w) => {
   const v = stand.wahl[s.id], id = w === EIGEN ? 'eigen' : w[0];
