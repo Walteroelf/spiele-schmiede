@@ -197,3 +197,21 @@ dialog.spielt[open] { padding: 0; gap: 0; }
 .stufe .symbol { width: 64px; height: 64px; }
 .stufe b { display: block; font-size: var(--gr-4); }
 @media (orientation: portrait) { .startinhalt { grid-template-columns: 1fr; } .stufen { order: -1; flex: 1; } }
+
+/* ---------- Planen: Frage und Wörter groß, Symbole klein ---------- */
+.frage { flex: none; padding: 6px var(--a-2); border-radius: var(--rundung); background: var(--dunkelblau); color: var(--weiss); }
+.frage h2 { font-size: clamp(30px, 4.6vmin, 46px); line-height: 1.2; }
+.frage h2:focus { outline: none; }
+.frage .ton { border-color: var(--weiss); }
+#inhalt .wahl { font-size: clamp(22px, 3.8vmin, 32px); font-weight: 700; line-height: 1.15; gap: 8px; color: var(--dunkelblau); hyphens: auto; overflow-wrap: anywhere; }
+#inhalt .wahl svg { flex: 0 1 56px; width: 56px; min-height: 24px; }
+#inhalt .raster:has(.kachel:nth-child(11)) .wahl { font-size: clamp(18px, 2.9vmin, 24px); gap: 4px; }
+#inhalt .raster:has(.kachel:nth-child(11)) .wahl svg { flex-basis: 42px; width: 42px; }
+#inhalt .raster.fehler .wahl { font-size: 17px; gap: 2px; }
+#inhalt .raster.fehler .wahl svg { flex: 0 1 32px; width: 32px; }
+#inhalt label { font-size: var(--gr-2); font-weight: 700; color: var(--dunkelblau); }
+@media (max-width: 520px) {
+  .frage h2 { font-size: 24px; }
+  #inhalt .wahl, #inhalt .raster:has(.kachel:nth-child(11)) .wahl { font-size: 16px; }
+}
+#inhalt .raster:has(.kachel:nth-child(11)) .kachel .ton { width: 36px; height: 36px; padding: 7px; top: 6px; right: 6px; }
