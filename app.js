@@ -212,7 +212,7 @@ function aktuellerText() {
     'So ist mein Spiel jetzt geplant:', ...steckbrief().split('\n').slice(1),
     'Gib mir wieder das ganze Spiel in einem Codeblock.'].join('\n');
 }
-// Von „Planen“ in den Chat: den passenden Text in den Zwischenspeicher legen
+// In den Chat: den passenden Text in den Zwischenspeicher legen
 function zumChat() {
   const text = aktuellerText();
   chatOeffnen();
@@ -353,8 +353,7 @@ function zeichnePhasen() {
 function zurPhase(ziel, von) {
   if (ziel === von) return;
   if (ziel === 1) { if (chat.open) chat.close(); if (spiel.open) spiel.close(); }
-  else if (ziel === 2 && von === 1 && (!stand.gesendet || aenderungen().length)) zumChat();
-  else if (ziel === 2) chatOeffnen();
+  else if (ziel === 2) zumChat();   // legt immer den aktuellen Stand der Planung in den Zwischenspeicher
   else if (von === 2) einfuegenUndSpielen();   // aus dem Chat: kopierten Code gleich starten
   else mein();
 }

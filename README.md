@@ -22,7 +22,7 @@ Der gescannte Chat wird bis zum Ende des Tages gemerkt. **QR-Code** oben rechts 
 
 Unter **Lehrkraft** stehen die Texte für das Lernszenario im AIS-Chat. Die Technik-Regeln stehen im Szenario, deshalb bleibt der Steckbrief kurz.
 
-Außerdem gibt es einen **Tasten-Test** für das MakeyMakey und beim Spiel **Code überarbeiten**: Es führt zurück zum Planen, dort lassen sich Auswahl, Fehlerbilder und Wünsche ändern. Beim Wechsel in den KI-Chat liegt der Änderungs-Text im Zwischenspeicher.
+Außerdem gibt es einen **Tasten-Test** für das MakeyMakey und beim Spiel **Code überarbeiten**: Es führt zurück zum Planen, dort lassen sich Auswahl, Fehlerbilder und Wünsche ändern. Wer oben auf **2 KI-Chat** tippt, hat immer den aktuellen Text der Planung im Zwischenspeicher.
 
 ## Datenschutz
 
