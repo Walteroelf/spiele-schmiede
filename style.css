@@ -1,0 +1,67 @@
+@font-face { font-family: "Andika"; font-weight: 400; font-display: swap; src: url("schriften/andika-400.woff2") format("woff2"); }
+@font-face { font-family: "Andika"; font-weight: 700; font-display: swap; src: url("schriften/andika-700.woff2") format("woff2"); }
+
+body { background: var(--hg); min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; }
+header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--a-2);
+  padding: var(--a-1) var(--a-2); background: var(--hellblau); color: var(--dunkelblau); }
+h1 { margin: 0; font-size: var(--gr-3); }
+h2 { margin: 0; font-size: var(--gr-3); }
+h3 { font-size: var(--gr-2); margin: var(--a-3) 0 var(--a-1); }
+nav { display: flex; flex-wrap: wrap; gap: var(--a-1); }
+header .knopf.leise { background: var(--weiss); color: var(--dunkelblau); border-color: var(--dunkelblau); }
+
+#schritte { display: flex; justify-content: center; gap: var(--a-1); list-style: none; margin: 0; padding: var(--a-2) var(--a-1) 0; flex-wrap: wrap; }
+#schritte button { width: 56px; height: 56px; padding: 8px; border-radius: 50%; border: 2px solid var(--rand); background: var(--karte); }
+#schritte button.fertig { background: var(--hellgruen); color: var(--dunkelblau); }
+#schritte button[aria-current] { background: var(--gelb); color: var(--dunkelblau); border: 4px solid var(--dunkelblau); }
+#schritte svg { width: 100%; height: 100%; }
+
+main { flex: 1; width: 100%; max-width: 960px; margin: 0 auto; padding: var(--a-2); }
+.frage { display: flex; align-items: center; justify-content: center; gap: var(--a-2); margin-bottom: var(--a-2); text-align: center; }
+.ton { width: 56px; height: 56px; flex: none; border-radius: 50%; border: 2px solid var(--dunkelblau); background: var(--gelb); color: var(--dunkelblau); padding: 12px; }
+.ton svg { width: 100%; height: 100%; }
+
+.raster { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: var(--a-2); }
+.kachel { position: relative; display: flex; }
+.wahl { flex: 1; display: flex; flex-direction: column; align-items: center; gap: var(--a-1); padding: var(--a-2) var(--a-1) 64px;
+  border: 3px solid var(--rand); border-radius: var(--rundung-gross); background: var(--karte); }
+.wahl svg { width: 88px; height: 88px; stroke-width: 1.6; }
+.wahl[aria-pressed="true"] { background: var(--gelb); color: var(--dunkelblau); border: 6px solid var(--dunkelblau); }
+.kachel .ton { position: absolute; bottom: 8px; left: 50%; translate: -50% 0; width: 48px; height: 48px; padding: 10px; background: var(--weiss); }
+
+label { display: block; }
+textarea, input[type=url] { width: 100%; padding: var(--a-2); border: 2px solid var(--rand); border-radius: var(--rundung); background: var(--karte); }
+textarea { min-height: 96px; resize: vertical; }
+
+.zettel { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: var(--a-1); padding: 0; list-style: none; }
+.zettel button { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: var(--a-1);
+  border: 2px solid var(--rand); border-radius: var(--rundung); background: var(--karte); }
+.zettel svg { width: 56px; height: 56px; stroke-width: 1.6; }
+.reihe { display: flex; flex-wrap: wrap; gap: var(--a-2); justify-content: center; align-items: center; margin: var(--a-3) 0; }
+.gross { min-height: 80px; font-size: var(--gr-2); }
+pre { white-space: pre-wrap; font: inherit; background: var(--karte); border: 2px solid var(--linie); border-radius: var(--rundung); padding: var(--a-2); user-select: text; }
+.meldung { text-align: center; font-size: var(--gr-2); min-height: 1.4em; }
+
+footer { position: sticky; bottom: 0; display: flex; justify-content: space-between; gap: var(--a-1); padding: var(--a-2); background: var(--flaeche-2); }
+footer [hidden] { display: none; }
+footer .weg { visibility: hidden; }
+
+dialog { width: min(820px, calc(100vw - 32px)); max-height: calc(100dvh - 32px); border: 3px solid var(--dunkelblau); border-radius: var(--rundung-gross);
+  background: var(--hg); color: var(--text); padding: var(--a-2); }
+dialog::backdrop { background: rgba(13, 43, 78, .7); }
+.fensterkopf { display: flex; justify-content: space-between; align-items: center; gap: var(--a-2); margin-bottom: var(--a-2); }
+
+.tastenfeld { display: grid; grid-template-columns: repeat(3, 96px); gap: var(--a-1); justify-content: center; }
+.taste { height: 96px; display: grid; place-items: center; border: 3px solid var(--rand); border-radius: var(--rundung); background: var(--karte); }
+.taste svg { width: 56px; height: 56px; }
+.taste.an { background: var(--gruen); color: var(--dunkelblau); border: 6px solid var(--dunkelblau); }
+.taste.breit { grid-column: 1 / -1; }
+
+@media (max-width: 520px) {
+  .raster { grid-template-columns: repeat(2, 1fr); }
+  .wahl svg { width: 64px; height: 64px; }
+  h1, h2 { font-size: var(--gr-2); }
+  footer { padding: var(--a-2) var(--a-1); }
+  footer .knopf { padding: 0 12px; gap: 4px; font-size: 16px; }
+  nav .knopf { min-height: 48px; padding: 0 12px; font-size: 16px; }
+}

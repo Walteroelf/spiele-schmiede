@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Spiele-Schmiede</title>
+<link rel="stylesheet" href="design.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <h1>Spiele-Schmiede</h1>
+  <nav>
+    <button class="knopf leise" id="btnTasten" data-symbol="tasten">Tasten-Test</button>
+    <button class="knopf leise" id="btnHilfe" data-symbol="reparieren">Klappt nicht</button>
+    <button class="knopf leise" id="btnLehrer" data-symbol="zahnrad">Lehrkraft</button>
+  </nav>
+</header>
+
+<ol id="schritte" aria-label="Schritte"></ol>
+
+<main>
+  <div class="frage">
+    <h2 id="frage" tabindex="-1"></h2>
+    <button class="ton" id="frageTon" aria-label="Frage vorlesen" data-symbol="ton"></button>
+  </div>
+  <div id="inhalt"></div>
+</main>
+
+<footer>
+  <button class="knopf leise" id="btnZurueck" data-symbol="zurueck">Zurück</button>
+  <button class="knopf gelb" id="btnWuerfel" data-symbol="wuerfel">Würfeln</button>
+  <button class="knopf gruen" id="btnWeiter" data-symbol="weiter">Weiter</button>
+</footer>
+
+<dialog id="fenster">
+  <div class="fensterkopf">
+    <h2 id="fensterTitel"></h2>
+    <button class="knopf leise" id="fensterZu" data-symbol="kreuz">Schließen</button>
+  </div>
+  <div id="fensterInhalt"></div>
+</dialog>
+
+<noscript>Diese App braucht JavaScript.</noscript>
+<script src="symbole.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
