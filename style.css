@@ -144,3 +144,27 @@ dialog.spielt #spielRahmen { border-radius: 0; }
   footer { padding: var(--a-2) var(--a-1); }
   footer .knopf { padding: 0 12px; gap: 4px; font-size: 16px; }
 }
+
+/* ---------- Kompakt: möglichst viel Platz für AIS-Chat und Spiel ---------- */
+header { padding: 4px var(--a-2); }
+.phase { min-height: 40px; padding: 0 12px; gap: 6px; font-size: 15px; }
+.phase b { width: 22px; height: 22px; font-size: 13px; }
+.phase svg { width: 20px; height: 20px; }
+.phase[aria-current] { border-width: 4px; }
+header nav .knopf, .leiste .knopf { min-height: 40px; font-size: 14px; }
+dialog.voll[open] { gap: 4px; padding: 4px; }
+dialog.spielt[open] { padding: 0; gap: 0; }
+#fremd { border-width: 3px; }
+.fremdschild { font-size: 13px; line-height: 1.3; padding-bottom: 2px; }
+#anleitung { flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: center; gap: 6px 8px; padding: 6px; }
+.auftragszeile .ton { width: 40px; height: 40px; padding: 8px; }
+#auftraege { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
+#auftraege li { gap: 6px; padding: 3px 8px; min-height: 40px; font-size: 14px; }
+#auftraege b { width: 22px; height: 22px; font-size: 13px; }
+#auftraege svg { width: 22px; height: 22px; }
+#auftraege .kopierzeichen svg { width: 30px; height: 30px; color: #45297A; stroke-width: 2; }
+.abschluss { gap: 6px var(--a-2); flex-basis: 100%; }
+.abschluss .knopf { min-height: 44px; font-size: 16px; }
+.kasten { width: 26px; height: 26px; border-width: 2px; }
+.kasten svg { width: 20px; height: 20px; }
+@media (orientation: portrait) { #auftraege { display: flex; flex-direction: column; flex: 1; } }

@@ -361,7 +361,7 @@ function chatAnsicht(was) {
 const AUFTRAEGE = [
   ['kopieren', 'Text einsetzen und senden'],
   ['uhr', 'Warten, bis der Chat fertig ist'],
-  ['editor', 'Beim Code auf „Kopieren“ tippen']
+  ['aiskopie', 'Beim Code auf dieses Zeichen tippen']
 ];
 const ERLEDIGT = 'Dann setze den Haken: Alles erledigt, mein Code ist kopiert.';
 function setzeHaken(an) {
@@ -444,6 +444,7 @@ $('auftraege').replaceChildren(...AUFTRAEGE.map(([bild, text], i) => {
   const li = el('li');
   li.innerHTML = `<b>${i + 1}</b>${symbol(bild)}`;
   li.append(el('span', {}, text));
+  if (bild === 'aiskopie') li.className = 'kopierzeichen';
   return li;
 }));
 $('btnScan').onclick = scanne;

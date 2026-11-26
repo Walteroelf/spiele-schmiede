@@ -32,6 +32,8 @@ const SYMBOLE = {
   gleich: p('M5 9h14M5 15h14'),
   treppe: p('M3 20h6v-5h6v-5h6V4'),
 
+  aiskopie: p('M9.500 9V4.500h10v10H15') + '<rect x="4.5" y="9.5" width="10" height="10"/>',
+
   // Spielarten
   fangen: p('M4 13h16l-2 8H6zM12 2v7M8.500 6L12 9.500 15.500 6'),
   ausweichen: c(7, 7, 4) + p('M10 10l3 3M16 3c5 5 5 11-1 16M15 14v5h5'),
