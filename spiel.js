@@ -40,13 +40,19 @@ function leererRahmen() {
 }
 const insSpiel = () => { const f = $('spielRahmen'); f.focus(); try { f.contentWindow.focus(); } catch (e) { /* egal */ } };
 
+// Vollbild innerhalb der Seite: nur das Spiel und ein kleiner Menü-Knopf
+function vollbild(an) {
+  spiel.classList.toggle('spielt', an);
+  $('btnMenue').hidden = !an;
+}
 function zeigeSpiel() {
   $('einfuegen').hidden = true;
   const f = leererRahmen();
   f.hidden = false;
   f.onload = insSpiel;
   f.srcdoc = mitErsatz(spielCode);
-  $('werkzeug').hidden = $('tippHinweis').hidden = false;
+  $('werkzeug').hidden = false;
+  vollbild(true);
   insSpiel();
 }
 function zeigeEinfuegen(hinweis = '') {
@@ -54,7 +60,9 @@ function zeigeEinfuegen(hinweis = '') {
   $('einfuegen').hidden = false;
   $('codeFeld').value = '';
   $('spielHinweis').textContent = hinweis;
-  $('werkzeug').hidden = $('tippHinweis').hidden = true;
+  $('werkzeug').hidden = true;
+  vollbild(false);
+  $('codeFeld').hidden = !hinweis;   // Ersatzfeld nur, wenn der Knopf allein nicht reicht
   $('btnAltes').hidden = !spielCode;
   if (hinweis) vorlesen(hinweis);
 }
@@ -90,6 +98,8 @@ $('codeFeld').addEventListener('paste', e => {
 $('codeFeld').addEventListener('input', e => { if (/<\/html>/i.test(e.target.value)) uebernehmen(e.target.value); });
 const mein = () => { spielOeffnen(); spielCode ? zeigeSpiel() : zeigeEinfuegen(); };
 $('btnAltes').onclick = zeigeSpiel;
+$('btnMenue').onclick = () => vollbild(false);
+$('btnVoll').onclick = () => { vollbild(true); insSpiel(); };
 $('btnNochmal').onclick = zeigeSpiel;
 $('btnNeuerCode').onclick = einfuegenUndSpielen;
 spiel.addEventListener('close', () => { if (!spiel.open) leererRahmen(); });   // Ton und Zeit stoppen

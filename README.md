@@ -10,7 +10,7 @@ Oben stehen immer die drei Schritte **1 Planen → 2 KI-Chat → 3 Spielen**.
 
 1. In der Spiele-Schmiede Bilder antippen (Spiel, Figur, Ort, Punkte, Ziel, Kontakte, Tempo) oder jeweils eine eigene Idee eingeben.
 2. Steckbrief kopieren, **AIS-Chat öffnen**, den QR-Code des Lernszenarios scannen und den Text einfügen. Der Chat erscheint in der App.
-3. Code kopieren und **Spiel starten** tippen: Das Spiel läuft in Großansicht. **Code ansehen** öffnet den eingebauten Editor (Kopie des [HTML-Editors](https://github.com/Walteroelf/html-editor) in `editor/`, mit eigenem Speicher).
+3. Code kopieren und **Spiel starten** tippen: Das Spiel startet im Vollbild, oben rechts führt **Menü** zurück. **Code ansehen** öffnet den eingebauten Editor (Kopie des [HTML-Editors](https://github.com/Walteroelf/html-editor) in `editor/`, mit eigenem Speicher).
 
 Im Chat (lila Rahmen) zeigt die hellblaue Leiste die drei Schritte. Erst mit dem Haken **„Mein Code ist kopiert“** geht **Spiel starten**.
 
