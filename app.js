@@ -588,7 +588,8 @@ function lehrkraft() {
       return [el('h3', {}, name),
         el('details', {}, el('summary', {}, 'Text ansehen'), el('pre', {}, text)),
         el('div', { class: 'reihe links' }, knopf('Kopieren', 'kopieren', 'leise', () => kopieren(text, m)), m)];
-    }));
+    }),
+    el('div', { class: 'reihe links' }, knopf('Zur Startseite', 'zurueck', 'leise', () => { fenster.close(); if (!start.open) start.showModal(); })));
 }
 
 document.querySelectorAll('[data-symbol]').forEach(b => b.insertAdjacentHTML('afterbegin', symbol(b.dataset.symbol)));
@@ -598,8 +599,21 @@ $('btnWeiter').onclick = () => gehe(stand.schritt + 1);
 $('btnTasten').onclick = tastenTest;
 $('btnStandard').onclick = () => wechsleModus(false);
 $('btnProfi').onclick = () => wechsleModus(true);
+// Startseite: Hinweise für die Lehrperson und Wahl der Stufe
+const start = $('startFenster');
+function starte(profi) {
+  wechsleModus(profi);
+  start.close();
+  gehe(0);
+}
+$('startStandard').onclick = () => starte(false);
+$('startProfi').onclick = () => starte(true);
+$('btnStartTexte').onclick = lehrkraft;
+start.addEventListener('cancel', e => e.preventDefault());
 $('btnKaputt').onclick = ueberarbeiten;
 $('btnLehrer').onclick = lehrkraft;
 $('fensterZu').onclick = () => fenster.close();
 zeichnePhasen();
 zeige(false);
+start.showModal();
+$('startTitel').focus();

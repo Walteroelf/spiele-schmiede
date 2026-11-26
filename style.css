@@ -181,3 +181,19 @@ dialog.spielt[open] { padding: 0; gap: 0; }
 .zettel.viele button { min-height: 40px; padding: 2px 6px; font-size: 12px; }
 .zettel.viele svg { width: 22px; height: 22px; }
 .zettel.viele span { -webkit-line-clamp: 1; }
+
+/* ---------- Startseite ---------- */
+#startFenster[open] { overflow: auto; padding: var(--a-2); }
+.startkopf { text-align: center; }
+.startkopf p { margin: 0 0 var(--a-2); font-size: var(--gr-2); }
+.startinhalt { flex: 1; display: grid; grid-template-columns: 1.15fr 1fr; gap: var(--a-2); width: 100%; max-width: 1080px; margin: 0 auto; }
+.startinhalt section { display: flex; flex-direction: column; gap: var(--a-2); padding: var(--a-2) var(--a-3); border-radius: var(--rundung-gross); background: var(--karte); }
+.startinhalt h3 { margin: 0; }
+.startinhalt ol { margin: 0; padding-left: 1.4em; }
+.startinhalt li { margin-bottom: var(--a-1); }
+.startinhalt p { margin: 0; }
+.startknoepfe { display: flex; flex-direction: column; gap: var(--a-1); }
+.stufe { flex: 1; min-height: 110px; justify-content: flex-start; gap: var(--a-3); text-align: left; }
+.stufe .symbol { width: 64px; height: 64px; }
+.stufe b { display: block; font-size: var(--gr-4); }
+@media (orientation: portrait) { .startinhalt { grid-template-columns: 1fr; } .stufen { order: -1; flex: 1; } }

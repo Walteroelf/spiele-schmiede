@@ -4,6 +4,8 @@ Prompt-Helfer mit Bildern: Kinder planen ein HTML-Spiel für das MakeyMakey, auc
 
 **Öffnen:** https://walteroelf.github.io/spiele-schmiede/
 
+Zu Beginn erscheint eine **Startseite** mit den Schritten für die Lehrperson, dem Link zum AIS-Chat und der Wahl **Standard** oder **Profi**.
+
 ## Ablauf
 
 Oben stehen immer die drei Schritte **1 Planen → 2 KI-Chat → 3 Spielen**.

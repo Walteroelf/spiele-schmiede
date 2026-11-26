@@ -8,8 +8,8 @@
 <link rel="apple-touch-icon" href="icon-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Schmiede">
-<link rel="stylesheet" href="design.css?v=19">
-<link rel="stylesheet" href="style.css?v=19">
+<link rel="stylesheet" href="design.css?v=20">
+<link rel="stylesheet" href="style.css?v=20">
 </head>
 <body>
 <header>
@@ -108,12 +108,39 @@
   <iframe id="editorRahmen" title="HTML-Editor" allow="fullscreen; clipboard-read; clipboard-write"></iframe>
 </dialog>
 
+<dialog id="startFenster" class="voll" aria-labelledby="startTitel">
+  <div class="startkopf">
+    <h2 id="startTitel" tabindex="-1">Spiele-Schmiede</h2>
+    <p>Eigene Spiele planen, im AIS-Chat bauen lassen und spielen.</p>
+  </div>
+  <div class="startinhalt">
+    <section class="lehrinfo" aria-labelledby="lehrTitel">
+      <h3 id="lehrTitel">Für die Lehrperson: einmal vorbereiten</h3>
+      <ol>
+        <li>Die <b>Texte für das Lernszenario</b> öffnen und kopieren.</li>
+        <li>Im <b>AIS-Chat</b> anmelden, ein Lernszenario anlegen und jeden Text in das passende Feld einsetzen.</li>
+        <li>Das Szenario freigeben und der Klasse den <b>QR-Code</b> zeigen.</li>
+      </ol>
+      <div class="startknoepfe">
+        <button type="button" class="knopf leise" id="btnStartTexte" data-symbol="kopieren">Texte für das Lernszenario</button>
+        <a class="knopf" id="linkChat" href="https://app.ais-chat.schule/login" target="_blank" rel="noopener" data-symbol="chat">AIS-Chat öffnen und einrichten</a>
+      </div>
+      <p>Ablauf für die Kinder: <b>1 Planen → 2 KI-Chat → 3 Spielen</b></p>
+    </section>
+    <section class="stufen" aria-labelledby="stufenTitel">
+      <h3 id="stufenTitel">Los geht’s: Wie möchtest du planen?</h3>
+      <button type="button" class="knopf gruen stufe" id="startStandard" data-symbol="start"><span><b>Standard</b>einfach, wenige Schritte</span></button>
+      <button type="button" class="knopf gelb stufe" id="startProfi" data-symbol="pokal"><span><b>Profi</b>viele Schritte, viel Auswahl</span></button>
+    </section>
+  </div>
+</dialog>
+
 <noscript>Diese App braucht JavaScript.</noscript>
 <script src="vendor/jsQR.js"></script>
-<script src="symbole.js?v=19"></script>
-<script src="profi.js?v=19"></script>
-<script src="profi-mehr.js?v=19"></script>
-<script src="app.js?v=19"></script>
-<script src="spiel.js?v=19"></script>
+<script src="symbole.js?v=20"></script>
+<script src="profi.js?v=20"></script>
+<script src="profi-mehr.js?v=20"></script>
+<script src="app.js?v=20"></script>
+<script src="spiel.js?v=20"></script>
 </body>
 </html>
