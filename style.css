@@ -168,3 +168,7 @@ dialog.spielt[open] { padding: 0; gap: 0; }
 .kasten { width: 26px; height: 26px; border-width: 2px; }
 .kasten svg { width: 20px; height: 20px; }
 @media (orientation: portrait) { #auftraege { display: flex; flex-direction: column; flex: 1; } }
+
+#inhalt .raster.fehler { flex: none; max-height: none; margin: 0; grid-template-rows: none; grid-auto-rows: 100px; }
+#wunsch.kurz { height: 72px; flex: none; }
+@media (orientation: portrait) { .raster.fehler { grid-template-columns: repeat(4, minmax(0, 1fr)); grid-template-rows: none; } }

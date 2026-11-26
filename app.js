@@ -120,11 +120,13 @@ const speicher = {
   set(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* privates Fenster */ } }
 };
 
-const neuerStand = () => ({ schritt: 0, wahl: { knoepfe: ['neu', 'kreuz'] }, eigen: {}, wunsch: '' });
+const neuerStand = () => ({ schritt: 0, wahl: { knoepfe: ['neu', 'kreuz'] }, eigen: {}, wunsch: '', probleme: [], aenderung: '', gesendet: null, letzter: '' });
 let stand = neuerStand();
 try {
   const s = JSON.parse(speicher.get('spiele-schmiede'));
-  if (s && s.wahl) stand = { schritt: Math.min(Math.max(s.schritt | 0, 0), FERTIG), wahl: s.wahl, eigen: s.eigen || {}, wunsch: String(s.wunsch || '') };
+  if (s && s.wahl) stand = { schritt: Math.min(Math.max(s.schritt | 0, 0), FERTIG), wahl: s.wahl, eigen: s.eigen || {}, wunsch: String(s.wunsch || ''),
+    probleme: Array.isArray(s.probleme) ? s.probleme : [], aenderung: String(s.aenderung || ''),
+    gesendet: Array.isArray(s.gesendet) ? s.gesendet : null, letzter: String(s.letzter || '') };
 } catch (e) { /* neu anfangen */ }
 if (!Array.isArray(stand.wahl.knoepfe)) stand.wahl.knoepfe = ['neu', 'kreuz'];
 const merken = () => speicher.set('spiele-schmiede', JSON.stringify(stand));
@@ -194,6 +196,32 @@ function gewaehlt(s) {
     liste.map(w => w === EIGEN ? eigenText(s) : w[2]).filter(Boolean).join(', ')];
 }
 
+// Nach dem ersten Senden zählt, was seitdem anders ist
+function aenderungen() {
+  if (!stand.gesendet) return [];
+  const neu = steckbrief().split('\n').filter(z => !stand.gesendet.includes(z)).map(z => '- ' + z);
+  neu.push(...FEHLER.filter(f => stand.probleme.includes(f[0] + f[1])).map(f => '- ' + f[2]));
+  if (stand.aenderung.trim()) neu.push('- ' + stand.aenderung.trim());
+  return neu;
+}
+function aktuellerText() {
+  if (!stand.gesendet) return steckbrief();
+  const neu = aenderungen();
+  if (!neu.length) return stand.letzter;
+  return ['Bitte verbessere mein Spiel. Das soll anders sein:', ...neu, '',
+    'So ist mein Spiel jetzt geplant:', ...steckbrief().split('\n').slice(1),
+    'Gib mir wieder das ganze Spiel in einem Codeblock.'].join('\n');
+}
+// Von „Planen“ in den Chat: den passenden Text in den Zwischenspeicher legen
+function zumChat() {
+  const text = aktuellerText();
+  chatOeffnen();
+  kopieren(text, $('chatHinweis'));
+  Object.assign(stand, { gesendet: steckbrief().split('\n'), letzter: text, probleme: [], aenderung: '' });
+  merken();
+  zeige(false);
+}
+
 function steckbrief() {
   const zeilen = ['Mein Spiel-Steckbrief. Bitte baue mir daraus sofort das Spiel.'];
   for (const s of SCHRITTE) {
@@ -210,7 +238,9 @@ function steckbrief() {
 function zeichneAblauf() {
   const stationen = [
     ...SCHRITTE.map(s => ({ frage: s.frage, leer: s.symbol, wahl: gewaehlt(s) })),
-    { frage: 'Noch ein Wunsch?', leer: 'chat', wahl: stand.wunsch.trim() ? ['chat', 'Wunsch'] : null },
+    stand.gesendet
+      ? { frage: 'Was soll anders sein?', leer: 'reparieren', wahl: stand.probleme.length || stand.aenderung.trim() ? ['reparieren', 'Ändern'] : null }
+      : { frage: 'Noch ein Wunsch?', leer: 'chat', wahl: stand.wunsch.trim() ? ['chat', 'Wunsch'] : null },
     { frage: 'Fertig', leer: 'haken', wahl: null }
   ];
   $('schritte').replaceChildren(...stationen.map((x, i) => {
@@ -244,12 +274,31 @@ function zeige(fokus) {
       inhalt.append(el('label', { for: 'eigen' }, 'Meine Idee: schreiben oder diktieren'), t);
     }
   } else if (n === SCHRITTE.length) {
-    $('frage').textContent = 'Noch ein Wunsch?';
-    const t = el('textarea', { id: 'wunsch', placeholder: 'Zum Beispiel: Die Katze soll lila sein.', oninput: () => { stand.wunsch = t.value; merken(); zeichneAblauf(); } });
-    t.value = stand.wunsch;
-    inhalt.append(el('label', { for: 'wunsch' }, 'Du kannst schreiben oder diktieren (Mikrofon auf der iPad-Tastatur). Du darfst auch einfach auf „Weiter“ tippen.'), t);
+    const neu = !!stand.gesendet;
+    const feld = neu ? 'aenderung' : 'wunsch';
+    $('frage').textContent = neu ? 'Was soll anders sein?' : 'Noch ein Wunsch?';
+    const t = el('textarea', { id: 'wunsch', class: neu ? 'kurz' : '', placeholder: neu ? 'Noch etwas? Zum Beispiel: Die Katze soll lila sein.' : 'Zum Beispiel: Die Katze soll lila sein.',
+      oninput: () => { stand[feld] = t.value; merken(); zeichneAblauf(); } });
+    t.value = stand[feld];
+    if (neu) {
+      const kacheln = FEHLER.map((f, i) => {
+        const id = f[0] + f[1];
+        return kachel(f, stand.probleme.includes(id), () => {
+          stand.probleme = stand.probleme.includes(id) ? stand.probleme.filter(x => x !== id) : [...stand.probleme, id];
+          merken();
+          zeige(false);
+          $('inhalt').querySelectorAll('.wahl')[i].focus({ preventScroll: true });
+        });
+      });
+      const bilder = raster(kacheln);
+      bilder.classList.add('fehler');
+      bilder.removeAttribute('style');
+      inhalt.append(bilder);
+    }
+    inhalt.append(el('label', { for: 'wunsch' }, neu ? 'Tippe auf Bilder, schreibe oder diktiere. Oben kannst du auch deine Auswahl ändern.'
+      : 'Du kannst schreiben oder diktieren (Mikrofon auf der iPad-Tastatur). Du darfst auch einfach auf „Weiter“ tippen.'), t);
   } else {
-    $('frage').textContent = 'Dein Spiel ist geplant!';
+    $('frage').textContent = aenderungen().length ? 'Deine Änderung ist bereit!' : 'Dein Spiel ist geplant!';
     const meldung = el('p', { class: 'meldung', role: 'status' });
     const liste = el('ul', { class: 'zettel' }, ...SCHRITTE.map((x, i) => {
       const w = gewaehlt(x);
@@ -258,11 +307,11 @@ function zeige(fokus) {
       b.append(el('span', {}, w === EIGEN ? eigenText(x) || w[1] : w ? w[1] : 'Offen'));
       return el('li', {}, b);
     }));
-    const text = steckbrief();
+    const text = aktuellerText();
     inhalt.append(
       liste,
       el('div', { class: 'reihe' },
-        knopf('Weiter zum KI-Chat', 'weiter', 'gruen riesig', () => { kopieren(text, meldung); chatOeffnen(); }),
+        knopf('Weiter zum KI-Chat', 'weiter', 'gruen riesig', zumChat),
         tonKnopf(text, 'Steckbrief')),
       meldung,
       el('div', { class: 'reihe' },
@@ -304,6 +353,7 @@ function zeichnePhasen() {
 function zurPhase(ziel, von) {
   if (ziel === von) return;
   if (ziel === 1) { if (chat.open) chat.close(); if (spiel.open) spiel.close(); }
+  else if (ziel === 2 && von === 1 && (!stand.gesendet || aenderungen().length)) zumChat();
   else if (ziel === 2) chatOeffnen();
   else if (von === 2) einfuegenUndSpielen();   // aus dem Chat: kopierten Code gleich starten
   else mein();
@@ -488,27 +538,11 @@ function tastenEreignis(e) {
 addEventListener('keydown', tastenEreignis);
 addEventListener('keyup', tastenEreignis);
 
-function hilfe() {
-  const aktiv = new Set();
-  const meldung = el('p', { class: 'meldung', role: 'status' });
-  const bilder = el('div', { class: 'raster fehler' });
-  const zeichne = () => bilder.replaceChildren(...FEHLER.map((f, i) => kachel(f, aktiv.has(i), () => {
-    aktiv.has(i) ? aktiv.delete(i) : aktiv.add(i);
-    meldung.textContent = '';
-    zeichne();
-    bilder.querySelectorAll('.wahl')[i].focus({ preventScroll: true });
-  })));
-  zeichne();
-  const mehr = el('textarea', { id: 'mehr', placeholder: 'Was soll anders sein?' });
-  const abschicken = () => {
-    const probleme = FEHLER.filter((f, i) => aktiv.has(i)).map(f => '- ' + f[2]);
-    if (mehr.value.trim()) probleme.push('- ' + mehr.value.trim());
-    if (!probleme.length) { meldung.textContent = 'Tippe zuerst auf ein Bild.'; return; }
-    kopieren(`Bitte verbessere mein Spiel:\n${probleme.join('\n')}\nGib mir wieder das ganze Spiel in einem Codeblock.`, meldung);
-    chatOeffnen();
-  };
-  oeffne('Was soll anders sein?', bilder, el('h3', {}, el('label', { for: 'mehr' }, 'Noch etwas?')), mehr,
-    el('div', { class: 'reihe' }, knopf('Weiter zum KI-Chat', 'weiter', 'gruen gross', abschicken)), meldung);
+// „Code überarbeiten“: zurück zum Planen, direkt auf „Was soll anders sein?“
+function ueberarbeiten() {
+  if (!stand.gesendet) Object.assign(stand, { gesendet: steckbrief().split('\n'), letzter: steckbrief() });
+  if (spiel.open) spiel.close();
+  gehe(SCHRITTE.length);
 }
 
 function lehrkraft() {
@@ -528,7 +562,7 @@ $('frageTon').onclick = () => vorlesen($('frage').textContent);
 $('btnZurueck').onclick = () => gehe(stand.schritt - 1);
 $('btnWeiter').onclick = () => gehe(stand.schritt + 1);
 $('btnTasten').onclick = tastenTest;
-$('btnKaputt').onclick = hilfe;
+$('btnKaputt').onclick = ueberarbeiten;
 $('btnLehrer').onclick = lehrkraft;
 $('fensterZu').onclick = () => fenster.close();
 zeichnePhasen();
