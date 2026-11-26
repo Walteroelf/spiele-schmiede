@@ -310,8 +310,30 @@ function stoppeKamera() {
 function chatAnsicht(was) {
   $('scanner').hidden = was !== 'scanner';
   $('keinChat').hidden = was !== 'keinChat';
-  $('chatRahmen').hidden = $('anleitung').hidden = was !== 'chat';
+  $('fremd').hidden = $('anleitung').hidden = was !== 'chat';
+  chatSchritt(0);
   $('btnCode').hidden = was === 'chat';
+}
+// Im Chat immer nur ein Auftrag. „Spiel starten“ gibt es erst, wenn der Code kopiert ist.
+const AUFTRAEGE = [
+  'Tippe oben im Chat in das Schreibfeld. Wähle „Einsetzen“ und sende den Text.',
+  'Warte, bis der Chat fertig ist. Tippe dann oben beim Code auf „Kopieren“.',
+  'Super! Jetzt kannst du dein Spiel starten.'
+];
+let auftrag = 0;
+let sperre = 0;
+function chatSchritt(n) {
+  auftrag = n;
+  $('schrittNr').textContent = `Schritt ${n + 1} von 3`;
+  $('auftragText').textContent = AUFTRAEGE[n];
+  $('btnSchrittZurueck').hidden = n === 0;
+  $('btnSteckbrief').hidden = $('btnNeuScan').hidden = n !== 0;
+  const haupt = [$('btnGesendet'), $('btnKopiert'), $('btnStarten')];
+  haupt.forEach((b, i) => { b.hidden = i !== n; b.disabled = n > 0; });
+  clearTimeout(sperre);   // kurze Pause gegen Doppeltippen
+  sperre = setTimeout(() => haupt.forEach(b => { b.disabled = false; }), 1500);
+  const dritte = $('chatFenster').querySelectorAll('.phase')[2];
+  if (dritte) dritte.disabled = n < 2;
 }
 function ladeChat(url) {
   stoppeKamera();
@@ -370,6 +392,10 @@ function chatOeffnen() {
 chat.addEventListener('close', stoppeKamera);
 document.addEventListener('visibilitychange', () => { if (document.hidden && strom) { stoppeKamera(); chatAnsicht('keinChat'); } });
 $('btnNeuScan').onclick = scanne;
+$('btnGesendet').onclick = () => { chatSchritt(1); vorlesen(AUFTRAEGE[1]); };
+$('btnKopiert').onclick = () => { chatSchritt(2); vorlesen(AUFTRAEGE[2]); };
+$('btnSchrittZurueck').onclick = () => chatSchritt(auftrag - 1);
+$('auftragTon').onclick = () => vorlesen(AUFTRAEGE[auftrag]);
 $('btnScan').onclick = scanne;
 $('btnCode').onclick = () => ladeChat(CHAT_URL);
 $('btnSteckbrief').onclick = () => kopieren(steckbrief(), $('chatHinweis'));

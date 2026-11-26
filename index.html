@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Spiele-Schmiede</title>
-<link rel="stylesheet" href="design.css?v=5">
-<link rel="stylesheet" href="style.css?v=5">
+<link rel="stylesheet" href="design.css?v=6">
+<link rel="stylesheet" href="style.css?v=6">
 </head>
 <body>
 <header>
@@ -51,17 +51,24 @@
     <button class="knopf riesig" id="btnScan" data-symbol="qr">QR-Code scannen</button>
   </div>
   <button class="knopf leise" id="btnCode" data-symbol="tasten">Ich tippe den Code ein</button>
-  <iframe id="chatRahmen" title="AIS-Chat" allow="clipboard-write; clipboard-read; microphone" hidden></iframe>
+  <div id="fremd" hidden>
+    <p class="fremdschild">Hier bist du im <b>AIS-Chat</b></p>
+    <iframe id="chatRahmen" title="AIS-Chat" allow="clipboard-write; clipboard-read; microphone"></iframe>
+  </div>
   <p id="chatHinweis" role="status"></p>
   <div id="anleitung" hidden>
-    <ol>
-      <li><b>1</b><span>Unten tippen, <em>Einsetzen</em>, senden</span></li>
-      <li><b>2</b><span>Beim Code auf <em>Kopieren</em> tippen</span></li>
-    </ol>
-    <button class="knopf gruen" id="btnStarten" data-symbol="start">3&ensp;Spiel starten</button>
-    <div class="nebenbei">
+    <p class="appschild">Spiele-Schmiede: <span id="schrittNr"></span></p>
+    <div class="auftragszeile">
+      <button class="ton" id="auftragTon" aria-label="Anleitung vorlesen" data-symbol="ton"></button>
+      <p id="auftragText" role="status"></p>
+    </div>
+    <div class="auftragsknoepfe">
+      <button class="knopf leise" id="btnSchrittZurueck" data-symbol="zurueck">Zurück</button>
       <button class="knopf leise" id="btnSteckbrief" data-symbol="kopieren">Text nochmal kopieren</button>
       <button class="knopf leise" id="btnNeuScan" data-symbol="qr">Anderer QR-Code</button>
+      <button class="knopf leise haupt" id="btnGesendet" data-symbol="haken">Ich habe gesendet</button>
+      <button class="knopf leise haupt" id="btnKopiert" data-symbol="haken">Ich habe den Code kopiert</button>
+      <button class="knopf gruen haupt" id="btnStarten" data-symbol="start">Spiel starten</button>
     </div>
   </div>
 </dialog>
@@ -96,8 +103,8 @@
 
 <noscript>Diese App braucht JavaScript.</noscript>
 <script src="vendor/jsQR.js"></script>
-<script src="symbole.js?v=5"></script>
-<script src="app.js?v=5"></script>
-<script src="spiel.js?v=5"></script>
+<script src="symbole.js?v=6"></script>
+<script src="app.js?v=6"></script>
+<script src="spiel.js?v=6"></script>
 </body>
 </html>

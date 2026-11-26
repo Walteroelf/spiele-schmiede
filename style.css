@@ -96,17 +96,22 @@ dialog .leiste .phasen { margin-inline: auto; }
 #kamera { flex: 1; min-height: 0; width: 100%; object-fit: contain; }
 .auftrag { margin: 0; font-size: var(--gr-3); text-align: center; }
 #btnCode { align-self: center; flex: none; }
+/* Fremder Bereich: lila Rahmen wie das AIS-Chat-Logo. Eigener Bereich: Hellblau der Spiele-Schmiede. */
+#fremd { flex: 1; min-height: 0; display: flex; flex-direction: column; border: 6px solid #45297A; border-radius: var(--rundung); background: #45297A; }
+.fremdschild { margin: 0; padding: 0 0 4px; text-align: center; color: #fff; font-size: 16px; }
 #chatRahmen, #spielRahmen, #editorRahmen { flex: 1; min-height: 0; width: 100%; border: 0; border-radius: var(--rundung); background: #fff; }
 #chatHinweis { margin: 0; text-align: center; }
 #chatHinweis:empty { display: none; }
-#anleitung { flex: none; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: var(--a-1) var(--a-3); padding: var(--a-1); border-radius: var(--rundung); background: var(--flaeche-2); }
-#anleitung ol { display: flex; flex-wrap: wrap; gap: var(--a-1) var(--a-3); margin: 0; padding: 0; list-style: none; }
-#anleitung li { display: flex; align-items: center; gap: var(--a-1); }
-#anleitung li b { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: var(--gelb); color: var(--dunkelblau); }
-#anleitung em { font-style: normal; font-weight: 700; }
-#btnStarten { min-height: 64px; font-size: var(--gr-2); }
-.nebenbei { display: flex; gap: var(--a-1); flex-basis: 100%; justify-content: center; }
-.nebenbei .knopf { min-height: 48px; font-size: 14px; }
+#anleitung { flex: none; display: flex; flex-direction: column; gap: var(--a-1); padding: var(--a-1) var(--a-2); border-radius: var(--rundung); background: var(--hellblau); color: var(--dunkelblau); }
+.appschild { margin: 0; font-size: 16px; font-weight: 700; text-align: center; }
+.auftragszeile { display: flex; align-items: center; justify-content: center; gap: var(--a-2); }
+.auftragszeile .ton { width: 48px; height: 48px; padding: 10px; }
+#auftragText { margin: 0; font-size: var(--gr-2); }
+.auftragsknoepfe { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--a-1); }
+.auftragsknoepfe .knopf { min-height: 56px; font-size: 16px; }
+.auftragsknoepfe .knopf.leise { background: var(--weiss); color: var(--dunkelblau); border-color: var(--dunkelblau); }
+.auftragsknoepfe .haupt { margin-left: var(--a-3); font-size: var(--gr-2); border-width: 3px; }
+.phase:disabled { opacity: .4; }
 #tippHinweis { margin: 0; text-align: center; font-size: 16px; }
 #einfuegen { flex: 1; min-height: 0; overflow: auto; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--a-2); }
 .riesig { min-height: 96px; padding: 0 48px; font-size: var(--gr-3); }

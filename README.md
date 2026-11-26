@@ -12,6 +12,8 @@ Oben stehen immer die drei Schritte **1 Planen → 2 KI-Chat → 3 Spielen**.
 2. Steckbrief kopieren, **AIS-Chat öffnen**, den QR-Code des Lernszenarios scannen und den Text einfügen. Der Chat erscheint in der App.
 3. Code kopieren und **Spiel starten** tippen: Das Spiel läuft in Großansicht. **Code ansehen** öffnet den eingebauten Editor (Kopie des [HTML-Editors](https://github.com/Walteroelf/html-editor) in `editor/`, mit eigenem Speicher).
 
+Im Chat (lila Rahmen) führt die hellblaue Leiste Schritt für Schritt: senden, Code kopieren, erst dann **Spiel starten**.
+
 ## Für Lehrkräfte
 
 Unter **Lehrkraft** stehen die Texte für das Lernszenario im AIS-Chat. Die Technik-Regeln stehen im Szenario, deshalb bleibt der Steckbrief kurz.
