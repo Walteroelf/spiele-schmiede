@@ -84,6 +84,7 @@ Regeln für jedes Spiel:
 - Nur kindgerechte Inhalte ohne Gewalt.`]
 ];
 
+const CHAT_URL = 'https://app.ais-chat.schule/login';
 const EDITOR_URL = 'https://walteroelf.github.io/html-editor/';
 const FERTIG = SCHRITTE.length + 1;           // 0 … n-1 Auswahl, n Wunsch, n+1 Steckbrief
 const $ = id => document.getElementById(id);
@@ -93,24 +94,12 @@ const speicher = {
   set(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* privates Fenster */ } }
 };
 
-let stand = { schritt: 0, wahl: {}, wunsch: '' };
+let stand = { schritt: 0, wahl: {}, eigen: {}, wunsch: '' };
 try {
   const s = JSON.parse(speicher.get('spiele-schmiede'));
-  if (s && s.wahl) stand = { schritt: Math.min(Math.max(s.schritt | 0, 0), FERTIG), wahl: s.wahl, wunsch: String(s.wunsch || '') };
+  if (s && s.wahl) stand = { schritt: Math.min(Math.max(s.schritt | 0, 0), FERTIG), wahl: s.wahl, eigen: s.eigen || {}, wunsch: String(s.wunsch || '') };
 } catch (e) { /* neu anfangen */ }
 const merken = () => speicher.set('spiele-schmiede', JSON.stringify(stand));
-
-// Link zum Lernszenario: aus dem Klassen-Link (#chat=…) oder aus den Einstellungen
-const webAdresse = u => { try { return new URL(u).protocol === 'https:' ? new URL(u).href : ''; } catch (e) { return ''; } };
-function linkAusAdresse() {
-  const m = location.hash.match(/^#chat=(.+)$/);
-  if (!m) return;
-  let u = '';
-  try { u = webAdresse(decodeURIComponent(m[1])); } catch (e) { return; }
-  if (u) speicher.set('spiele-schmiede-chat', u);
-}
-linkAusAdresse();
-const chatLink = () => webAdresse(speicher.get('spiele-schmiede-chat'));
 
 function el(tag, attr = {}, ...kinder) {
   const e = document.createElement(tag);
@@ -163,37 +152,45 @@ function kachel(eintrag, gedrueckt, aktion) {
   return el('div', { class: 'kachel' }, b, tonKnopf(wort, wort));
 }
 
-const gewaehlt = s => s.wahl.find(w => w[0] === stand.wahl[s.id]);
+const EIGEN = ['idee', 'Eigene Idee'];
+const eigenText = s => String(stand.eigen[s.id] || '').trim();
+const gewaehlt = s => stand.wahl[s.id] === 'eigen' ? EIGEN : s.wahl.find(w => w[0] === stand.wahl[s.id]);
 
 function steckbrief() {
   const zeilen = ['Mein Spiel-Steckbrief. Bitte baue mir daraus sofort das Spiel.'];
   for (const s of SCHRITTE) {
     const w = gewaehlt(s);
-    zeilen.push(`${s.zeile}: ${w ? w[2] : 'such du etwas Passendes aus'}`);
+    const satz = w === EIGEN ? eigenText(s) : w && w[2];
+    zeilen.push(`${s.zeile}: ${satz || 'such du etwas Passendes aus'}`);
   }
   if (stand.wunsch.trim()) zeilen.push('Das wünsche ich mir noch: ' + stand.wunsch.trim());
   return zeilen.join('\n');
 }
 
-function chatKnoepfe(meldung) {
-  const reihe = el('div', { class: 'reihe' });
-  const link = chatLink();
-  if (link) {
-    const a = el('a', { class: 'knopf gross', href: link, target: '_blank', rel: 'noopener' });
-    a.innerHTML = symbol('chat');
-    a.append('2. AIS-Chat öffnen');
-    reihe.append(a);
-  } else {
-    reihe.append(knopf('2. AIS-Chat öffnen', 'chat', 'gross', () => {
-      meldung.textContent = 'Öffne das Lernszenario im AIS-Chat. Deine Lehrkraft hilft dir.';
-      vorlesen(meldung.textContent);
-    }));
-  }
+function weiterKnoepfe() {
   const e = el('a', { class: 'knopf gelb gross', href: EDITOR_URL, target: '_blank', rel: 'noopener' });
   e.innerHTML = symbol('editor');
   e.append('3. HTML-Editor öffnen');
-  reihe.append(e);
-  return reihe;
+  return el('div', { class: 'reihe' }, knopf('2. AIS-Chat öffnen', 'chat', 'gross', chatOeffnen), e);
+}
+
+// Bilderablauf oben: gewählte Bilder ersetzen die Schritt-Symbole
+function zeichneAblauf() {
+  const stationen = [
+    ...SCHRITTE.map(s => ({ frage: s.frage, leer: s.symbol, wahl: gewaehlt(s) })),
+    { frage: 'Noch ein Wunsch?', leer: 'chat', wahl: stand.wunsch.trim() ? ['chat', 'Wunsch'] : null },
+    { frage: 'Fertig', leer: 'haken', wahl: null }
+  ];
+  $('schritte').replaceChildren(...stationen.map((x, i) => {
+    const wort = x.wahl === EIGEN ? 'Idee' : x.wahl ? x.wahl[1] : '';
+    const b = el('button', { type: 'button', class: x.wahl ? 'fertig' : '', 'aria-label': wort ? `${x.frage} ${wort}` : x.frage, onclick: () => gehe(i) });
+    if (i === stand.schritt) b.setAttribute('aria-current', 'step');
+    b.innerHTML = symbol(x.wahl ? x.wahl[0] : x.leer);
+    b.append(el('span', {}, wort));
+    return el('li', {}, b);
+  }));
+  const jetzt = $('schritte').children[stand.schritt];
+  $('schritte').scrollLeft = jetzt.offsetLeft - ($('schritte').clientWidth - jetzt.offsetWidth) / 2;
 }
 
 function zeige(fokus) {
@@ -201,21 +198,20 @@ function zeige(fokus) {
   const s = SCHRITTE[n];
   const inhalt = $('inhalt');
   inhalt.replaceChildren();
-
-  $('schritte').replaceChildren(...[...SCHRITTE, { symbol: 'chat', frage: 'Noch ein Wunsch?' }, { symbol: 'haken', frage: 'Fertig' }].map((x, i) => {
-    const fertig = x.id ? !!stand.wahl[x.id] : false;
-    const b = el('button', { type: 'button', class: fertig ? 'fertig' : '', 'aria-label': x.frage, onclick: () => gehe(i) });
-    if (i === n) b.setAttribute('aria-current', 'step');
-    b.innerHTML = symbol(x.symbol);
-    return el('li', {}, b);
-  }));
+  zeichneAblauf();
 
   if (s) {
     $('frage').textContent = s.frage;
-    inhalt.append(el('div', { class: 'raster' }, ...s.wahl.map((w, i) => kachel(w, stand.wahl[s.id] === w[0], () => waehle(s, i)))));
+    const kacheln = [...s.wahl, EIGEN].map((w, i) => kachel(w, gewaehlt(s) === w, () => waehle(s, i)));
+    inhalt.append(el('div', { class: 'raster' }, ...kacheln));
+    if (gewaehlt(s) === EIGEN) {
+      const t = el('textarea', { id: 'eigen', placeholder: 'Meine Idee …', oninput: () => { stand.eigen[s.id] = t.value; merken(); } });
+      t.value = stand.eigen[s.id] || '';
+      inhalt.append(el('label', { for: 'eigen' }, el('h3', {}, 'Meine Idee'), 'Schreiben oder diktieren (Mikrofon auf der iPad-Tastatur).'), t);
+    }
   } else if (n === SCHRITTE.length) {
     $('frage').textContent = 'Noch ein Wunsch?';
-    const t = el('textarea', { id: 'wunsch', placeholder: 'Zum Beispiel: Die Katze soll lila sein.', oninput: () => { stand.wunsch = t.value; merken(); } });
+    const t = el('textarea', { id: 'wunsch', placeholder: 'Zum Beispiel: Die Katze soll lila sein.', oninput: () => { stand.wunsch = t.value; merken(); zeichneAblauf(); } });
     t.value = stand.wunsch;
     inhalt.append(el('label', { for: 'wunsch' }, 'Du kannst schreiben oder diktieren (Mikrofon auf der iPad-Tastatur). Du darfst auch einfach auf „Weiter“ tippen.'), t);
   } else {
@@ -225,7 +221,7 @@ function zeige(fokus) {
       const w = gewaehlt(x);
       const b = el('button', { type: 'button', 'aria-label': `${x.frage} ${w ? w[1] : 'offen'}. Ändern`, onclick: () => gehe(i) });
       b.innerHTML = symbol(w ? w[0] : 'quiz');
-      b.append(el('span', {}, w ? w[1] : 'Offen'));
+      b.append(el('span', {}, w === EIGEN ? eigenText(x) || w[1] : w ? w[1] : 'Offen'));
       return el('li', {}, b);
     }));
     const text = steckbrief();
@@ -233,9 +229,9 @@ function zeige(fokus) {
       liste,
       el('div', { class: 'reihe' }, knopf('1. Kopieren', 'kopieren', 'gruen gross', () => kopieren(text, meldung)), tonKnopf(text, 'Steckbrief')),
       meldung,
-      chatKnoepfe(meldung),
+      weiterKnoepfe(),
       el('details', {}, el('summary', {}, 'Text ansehen'), el('pre', {}, text)),
-      el('div', { class: 'reihe' }, knopf('Neues Spiel', 'neu', 'leise', () => { stand = { schritt: 0, wahl: {}, wunsch: '' }; merken(); zeige(true); }))
+      el('div', { class: 'reihe' }, knopf('Neues Spiel', 'neu', 'leise', () => { stand = { schritt: 0, wahl: {}, eigen: {}, wunsch: '' }; merken(); zeige(true); }))
     );
   }
 
@@ -252,12 +248,95 @@ function gehe(n) {
   zeige(true);
 }
 function waehle(s, i) {
-  stand.wahl[s.id] = s.wahl[i][0];
+  const w = [...s.wahl, EIGEN][i];
+  stand.wahl[s.id] = w === EIGEN ? 'eigen' : w[0];
   merken();
-  vorlesen(s.wahl[i][1]);
+  vorlesen(w[1]);
   zeige(false);
-  $('inhalt').querySelectorAll('.wahl')[i].focus({ preventScroll: true });
+  if (w === EIGEN) $('eigen').focus();
+  else $('inhalt').querySelectorAll('.wahl')[i].focus({ preventScroll: true });
 }
+
+// ---------- AIS-Chat: QR-Code scannen, Chat bleibt in der App ----------
+const chat = $('chatFenster');
+const video = $('kamera');
+let strom = null;
+let scanNr = 0;   // jeder neue Scan oder Stopp macht ältere Kamera-Anfragen ungültig
+
+// Nur Adressen des AIS-Chats werden geladen, fremde QR-Codes nicht
+function chatAdresse(text) {
+  try {
+    const u = new URL(text.trim());
+    return u.protocol === 'https:' && (u.hostname === 'ais-chat.schule' || u.hostname.endsWith('.ais-chat.schule')) ? u.href : '';
+  } catch (e) { return ''; }
+}
+function stoppeKamera() {
+  scanNr++;
+  if (strom) strom.getTracks().forEach(t => t.stop());
+  strom = null;
+  video.srcObject = null;
+  $('scanner').hidden = true;
+}
+function ladeChat(url) {
+  stoppeKamera();
+  $('chatHinweis').textContent = '';
+  $('chatRahmen').src = url;
+  $('chatRahmen').hidden = false;
+  $('chatTab').href = url;
+}
+async function scanne() {
+  stoppeKamera();
+  const nr = scanNr;
+  const hinweis = $('chatHinweis');
+  $('chatRahmen').hidden = true;
+  $('scanner').hidden = false;
+  hinweis.textContent = 'Halte den QR-Code vor die Kamera.';
+  let s;
+  try {
+    s = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false });
+    if (nr !== scanNr) { s.getTracks().forEach(t => t.stop()); return; }
+    strom = s;
+    video.srcObject = s;
+    await video.play();
+  } catch (e) {
+    if (nr !== scanNr) return;
+    stoppeKamera();
+    hinweis.textContent = 'Die Kamera geht nicht. Erlaube die Kamera oder tippe auf „Code tippen“.';
+    vorlesen(hinweis.textContent);
+    return;
+  }
+  const bild = document.createElement('canvas');
+  const g = bild.getContext('2d', { willReadFrequently: true });
+  const suche = () => {
+    if (nr !== scanNr) return;
+    if (video.videoWidth) {
+      bild.width = video.videoWidth;
+      bild.height = video.videoHeight;
+      g.drawImage(video, 0, 0);
+      const fund = jsQR(g.getImageData(0, 0, bild.width, bild.height).data, bild.width, bild.height);
+      if (fund && fund.data) {
+        const url = chatAdresse(fund.data);
+        if (url) { ladeChat(url); return; }
+        hinweis.textContent = 'Das ist kein Code vom AIS-Chat.';
+      }
+    }
+    setTimeout(suche, 200);
+  };
+  suche();
+}
+function chatOeffnen() {
+  if ('speechSynthesis' in window) speechSynthesis.cancel();
+  if (fenster.open) fenster.close();
+  chat.showModal();
+  if (!$('chatRahmen').getAttribute('src')) scanne();   // ein offener Chat bleibt erhalten
+}
+chat.addEventListener('close', stoppeKamera);
+document.addEventListener('visibilitychange', () => { if (document.hidden && strom) { stoppeKamera(); $('chatHinweis').textContent = 'Tippe auf „QR-Code scannen“.'; } });
+$('btnChat').onclick = chatOeffnen;
+$('btnScan').onclick = scanne;
+$('btnCode').onclick = () => ladeChat(CHAT_URL);
+$('btnSteckbrief').onclick = () => kopieren(steckbrief(), $('chatHinweis'));
+$('chatZu').onclick = () => chat.close();
 
 // ---------- Fenster ----------
 const fenster = $('fenster');
@@ -317,46 +396,19 @@ function hilfe() {
     kopieren(`Bitte verbessere mein Spiel:\n${probleme.join('\n')}\nGib mir wieder das ganze Spiel in einem Codeblock.`, meldung);
   };
   oeffne('Was klappt nicht?', raster, el('h3', {}, el('label', { for: 'mehr' }, 'Noch etwas?')), mehr,
-    el('div', { class: 'reihe' }, knopf('Kopieren', 'kopieren', 'gruen gross', kopiere)), meldung,
+    el('div', { class: 'reihe' }, knopf('Kopieren', 'kopieren', 'gruen gross', kopiere), knopf('AIS-Chat öffnen', 'chat', 'gross', chatOeffnen)), meldung,
     el('p', {}, 'Füge den Text im selben Chat ein, in dem dein Spiel entstanden ist.'));
 }
 
 function lehrkraft() {
-  const meldung = el('p', { class: 'meldung', role: 'status' });
-  const feld = el('input', { type: 'url', id: 'chatFeld', placeholder: 'https://…' });
-  feld.value = chatLink();
-  const sichern = () => {
-    const roh = feld.value.trim();
-    const u = webAdresse(roh);
-    if (roh && !u) { meldung.textContent = 'Bitte einen Link eingeben, der mit https:// beginnt.'; return null; }
-    speicher.set('spiele-schmiede-chat', u);
-    // altes #chat=… entfernen, sonst überschreibt es beim Neuladen den neuen Link
-    history.replaceState(null, '', location.pathname + location.search);
-    zeige(false);
-    return u;
-  };
-  const teile = [
-    el('h3', {}, '1. Lernszenario im AIS-Chat anlegen'),
-    el('p', {}, 'Kopiere die Texte in die passenden Felder. „Hintergrundwissen“ bleibt leer.'),
+  oeffne('Für Lehrkräfte',
+    el('h3', {}, 'Lernszenario im AIS-Chat anlegen'),
+    el('p', {}, 'Kopiere die Texte in die passenden Felder. „Hintergrundwissen“ bleibt leer. Zeige den Kindern dann den QR-Code des Lernszenarios.'),
     ...SZENARIO.flatMap(([name, text]) => {
       const m = el('span', { role: 'status' });
       return [el('details', {}, el('summary', {}, name), el('pre', {}, text)),
         el('div', { class: 'reihe' }, knopf(name + ' kopieren', 'kopieren', 'leise', () => kopieren(text, m)), m)];
-    }),
-    el('h3', {}, el('label', { for: 'chatFeld' }, '2. Link zum Lernszenario eintragen')),
-    feld,
-    el('p', {}, 'Der Link wird nur auf diesem Gerät gespeichert. Mit dem Klassen-Link bekommen ihn auch die Geräte der Kinder.'),
-    el('div', { class: 'reihe' },
-      knopf('Speichern', 'haken', 'gruen', () => { if (sichern() !== null) meldung.textContent = 'Gespeichert.'; }),
-      knopf('Klassen-Link kopieren', 'kopieren', 'leise', () => {
-        const u = sichern();
-        if (u === null) return;
-        if (!u) { meldung.textContent = 'Trage zuerst den Link ein.'; return; }
-        kopieren(location.origin + location.pathname + '#chat=' + encodeURIComponent(u), meldung);
-      })),
-    meldung
-  ];
-  oeffne('Für Lehrkräfte', ...teile);
+    }));
 }
 
 document.querySelectorAll('[data-symbol]').forEach(b => b.insertAdjacentHTML('afterbegin', symbol(b.dataset.symbol)));
@@ -373,5 +425,4 @@ $('btnTasten').onclick = tastenTest;
 $('btnHilfe').onclick = hilfe;
 $('btnLehrer').onclick = lehrkraft;
 $('fensterZu').onclick = () => fenster.close();
-addEventListener('hashchange', () => { linkAusAdresse(); zeige(false); });
 zeige(false);

@@ -11,6 +11,7 @@
 <header>
   <h1>Spiele-Schmiede</h1>
   <nav>
+    <button class="knopf leise" id="btnChat" data-symbol="chat">AIS-Chat</button>
     <button class="knopf leise" id="btnTasten" data-symbol="tasten">Tasten-Test</button>
     <button class="knopf leise" id="btnHilfe" data-symbol="reparieren">Klappt nicht</button>
     <button class="knopf leise" id="btnLehrer" data-symbol="zahnrad">Lehrkraft</button>
@@ -41,7 +42,21 @@
   <div id="fensterInhalt"></div>
 </dialog>
 
+<dialog id="chatFenster" aria-label="AIS-Chat">
+  <div class="chatkopf">
+    <button class="knopf" id="btnScan" data-symbol="qr">QR-Code scannen</button>
+    <button class="knopf leise" id="btnCode" data-symbol="tasten">Code tippen</button>
+    <button class="knopf gruen" id="btnSteckbrief" data-symbol="kopieren">Steckbrief kopieren</button>
+    <a class="knopf leise" id="chatTab" href="https://app.ais-chat.schule/login" target="_blank" rel="noopener">Neuer Tab</a>
+    <button class="knopf leise" id="chatZu" data-symbol="kreuz">Schließen</button>
+  </div>
+  <p id="chatHinweis" role="status"></p>
+  <div id="scanner" hidden><video id="kamera" playsinline muted aria-label="Kamerabild"></video></div>
+  <iframe id="chatRahmen" title="AIS-Chat" allow="clipboard-write; clipboard-read; microphone" hidden></iframe>
+</dialog>
+
 <noscript>Diese App braucht JavaScript.</noscript>
+<script src="vendor/jsQR.js"></script>
 <script src="symbole.js"></script>
 <script src="app.js"></script>
 </body>

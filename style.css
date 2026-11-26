@@ -10,11 +10,15 @@ h3 { font-size: var(--gr-2); margin: var(--a-3) 0 var(--a-1); }
 nav { display: flex; flex-wrap: wrap; gap: var(--a-1); }
 header .knopf.leise { background: var(--weiss); color: var(--dunkelblau); border-color: var(--dunkelblau); }
 
-#schritte { display: flex; justify-content: center; gap: var(--a-1); list-style: none; margin: 0; padding: var(--a-2) var(--a-1) 0; flex-wrap: wrap; }
-#schritte button { width: 56px; height: 56px; padding: 8px; border-radius: 50%; border: 2px solid var(--rand); background: var(--karte); }
-#schritte button.fertig { background: var(--hellgruen); color: var(--dunkelblau); }
+#schritte { display: flex; gap: 20px; list-style: none; margin: 0 auto; padding: var(--a-2); max-width: 100%; overflow-x: auto; position: relative; }
+#schritte li { position: relative; flex: none; }
+#schritte li + li::before { content: ""; position: absolute; left: -17px; top: 34px; width: 14px; height: 3px; background: var(--rand); }
+#schritte button { width: 76px; height: 84px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; padding: 4px;
+  border: 2px dashed var(--rand); border-radius: var(--rundung); background: transparent; }
+#schritte button.fertig { border-style: solid; background: var(--karte); }
 #schritte button[aria-current] { background: var(--gelb); color: var(--dunkelblau); border: 4px solid var(--dunkelblau); }
-#schritte svg { width: 100%; height: 100%; }
+#schritte svg { width: 40px; height: 40px; flex: none; stroke-width: 1.7; }
+#schritte span { font-size: 12px; line-height: 1.2; max-width: 100%; height: 15px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 
 main { flex: 1; width: 100%; max-width: 960px; margin: 0 auto; padding: var(--a-2); }
 .frage { display: flex; align-items: center; justify-content: center; gap: var(--a-2); margin-bottom: var(--a-2); text-align: center; }
@@ -24,8 +28,8 @@ main { flex: 1; width: 100%; max-width: 960px; margin: 0 auto; padding: var(--a-
 .raster { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: var(--a-2); }
 .kachel { position: relative; display: flex; }
 .wahl { flex: 1; display: flex; flex-direction: column; align-items: center; gap: var(--a-1); padding: var(--a-2) var(--a-1) 64px;
-  border: 3px solid var(--rand); border-radius: var(--rundung-gross); background: var(--karte); }
-.wahl svg { width: 88px; height: 88px; stroke-width: 1.6; }
+  border: 3px solid var(--rand); border-radius: var(--rundung); background: var(--karte); }
+.wahl svg { width: 72px; height: 72px; stroke-width: 1.5; }
 .wahl[aria-pressed="true"] { background: var(--gelb); color: var(--dunkelblau); border: 6px solid var(--dunkelblau); }
 .kachel .ton { position: absolute; bottom: 8px; left: 50%; translate: -50% 0; width: 48px; height: 48px; padding: 10px; background: var(--weiss); }
 
@@ -34,6 +38,7 @@ textarea, input[type=url] { width: 100%; padding: var(--a-2); border: 2px solid 
 textarea { min-height: 96px; resize: vertical; }
 
 .zettel { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: var(--a-1); padding: 0; list-style: none; }
+.zettel span { overflow-wrap: anywhere; }
 .zettel button { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: var(--a-1);
   border: 2px solid var(--rand); border-radius: var(--rundung); background: var(--karte); }
 .zettel svg { width: 56px; height: 56px; stroke-width: 1.6; }
@@ -56,6 +61,16 @@ dialog::backdrop { background: rgba(13, 43, 78, .7); }
 .taste svg { width: 56px; height: 56px; }
 .taste.an { background: var(--gruen); color: var(--dunkelblau); border: 6px solid var(--dunkelblau); }
 .taste.breit { grid-column: 1 / -1; }
+
+#chatFenster[open] { display: flex; flex-direction: column; gap: var(--a-1); width: calc(100vw - 16px); max-width: none; height: calc(100dvh - 16px); max-height: none; padding: var(--a-1); }
+.chatkopf { display: flex; flex-wrap: wrap; gap: var(--a-1); }
+.chatkopf .knopf { min-height: 48px; padding: 0 var(--a-2); }
+#chatHinweis { margin: 0; text-align: center; }
+#chatHinweis:empty { display: none; }
+#scanner, #chatRahmen { flex: 1; min-height: 0; width: 100%; border: 0; border-radius: var(--rundung); }
+#scanner[hidden], #chatRahmen[hidden] { display: none; }
+#chatRahmen { background: #fff; }
+#kamera { width: 100%; height: 100%; object-fit: contain; }
 
 @media (max-width: 520px) {
   .raster { grid-template-columns: repeat(2, 1fr); }
