@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Spiele-Schmiede</title>
-<link rel="stylesheet" href="design.css?v=6">
-<link rel="stylesheet" href="style.css?v=6">
+<link rel="stylesheet" href="design.css?v=7">
+<link rel="stylesheet" href="style.css?v=7">
 </head>
 <body>
 <header>
@@ -42,7 +42,10 @@
 </dialog>
 
 <dialog id="chatFenster" class="voll" aria-label="Schritt 2: KI-Chat">
-  <div class="leiste"><div class="phasen" data-aktiv="2"></div></div>
+  <div class="leiste">
+    <div class="phasen" data-aktiv="2"></div>
+    <button class="knopf leise" id="btnNeuScan" data-symbol="qr" hidden>QR-Code</button>
+  </div>
   <div id="scanner" hidden>
     <p class="auftrag">Halte den QR-Code vor die Kamera.</p>
     <video id="kamera" playsinline muted aria-label="Kamerabild"></video>
@@ -57,18 +60,14 @@
   </div>
   <p id="chatHinweis" role="status"></p>
   <div id="anleitung" hidden>
-    <p class="appschild">Spiele-Schmiede: <span id="schrittNr"></span></p>
     <div class="auftragszeile">
       <button class="ton" id="auftragTon" aria-label="Anleitung vorlesen" data-symbol="ton"></button>
-      <p id="auftragText" role="status"></p>
+      <p class="appschild">Das musst du oben im Chat tun:</p>
     </div>
-    <div class="auftragsknoepfe">
-      <button class="knopf leise" id="btnSchrittZurueck" data-symbol="zurueck">Zurück</button>
-      <button class="knopf leise" id="btnSteckbrief" data-symbol="kopieren">Text nochmal kopieren</button>
-      <button class="knopf leise" id="btnNeuScan" data-symbol="qr">Anderer QR-Code</button>
-      <button class="knopf leise haupt" id="btnGesendet" data-symbol="haken">Ich habe gesendet</button>
-      <button class="knopf leise haupt" id="btnKopiert" data-symbol="haken">Ich habe den Code kopiert</button>
-      <button class="knopf gruen haupt" id="btnStarten" data-symbol="start">Spiel starten</button>
+    <ol id="auftraege"></ol>
+    <div class="abschluss">
+      <button class="knopf leise" id="btnErledigt" role="checkbox" aria-checked="false"><span class="kasten" data-symbol="haken"></span>Alles erledigt: Mein Code ist kopiert.</button>
+      <button class="knopf gruen" id="btnStarten" data-symbol="start" disabled>Spiel starten</button>
     </div>
   </div>
 </dialog>
@@ -103,8 +102,8 @@
 
 <noscript>Diese App braucht JavaScript.</noscript>
 <script src="vendor/jsQR.js"></script>
-<script src="symbole.js?v=6"></script>
-<script src="app.js?v=6"></script>
-<script src="spiel.js?v=6"></script>
+<script src="symbole.js?v=7"></script>
+<script src="app.js?v=7"></script>
+<script src="spiel.js?v=7"></script>
 </body>
 </html>

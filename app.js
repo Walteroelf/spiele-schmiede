@@ -311,29 +311,22 @@ function chatAnsicht(was) {
   $('scanner').hidden = was !== 'scanner';
   $('keinChat').hidden = was !== 'keinChat';
   $('fremd').hidden = $('anleitung').hidden = was !== 'chat';
-  chatSchritt(0);
+  $('btnNeuScan').hidden = was !== 'chat';
+  setzeHaken(false);
   $('btnCode').hidden = was === 'chat';
 }
-// Im Chat immer nur ein Auftrag. „Spiel starten“ gibt es erst, wenn der Code kopiert ist.
+// Unter dem Chat: die Schritte, dann ein Häkchen. Erst danach geht „Spiel starten“.
 const AUFTRAEGE = [
-  'Tippe oben im Chat in das Schreibfeld. Wähle „Einsetzen“ und sende den Text.',
-  'Warte, bis der Chat fertig ist. Tippe dann oben beim Code auf „Kopieren“.',
-  'Super! Jetzt kannst du dein Spiel starten.'
+  ['kopieren', 'Text einsetzen und senden'],
+  ['uhr', 'Warten, bis der Chat fertig ist'],
+  ['editor', 'Beim Code auf „Kopieren“ tippen']
 ];
-let auftrag = 0;
-let sperre = 0;
-function chatSchritt(n) {
-  auftrag = n;
-  $('schrittNr').textContent = `Schritt ${n + 1} von 3`;
-  $('auftragText').textContent = AUFTRAEGE[n];
-  $('btnSchrittZurueck').hidden = n === 0;
-  $('btnSteckbrief').hidden = $('btnNeuScan').hidden = n !== 0;
-  const haupt = [$('btnGesendet'), $('btnKopiert'), $('btnStarten')];
-  haupt.forEach((b, i) => { b.hidden = i !== n; b.disabled = n > 0; });
-  clearTimeout(sperre);   // kurze Pause gegen Doppeltippen
-  sperre = setTimeout(() => haupt.forEach(b => { b.disabled = false; }), 1500);
+const ERLEDIGT = 'Dann setze den Haken: Alles erledigt, mein Code ist kopiert.';
+function setzeHaken(an) {
+  $('btnErledigt').setAttribute('aria-checked', String(an));
+  $('btnStarten').disabled = !an;
   const dritte = $('chatFenster').querySelectorAll('.phase')[2];
-  if (dritte) dritte.disabled = n < 2;
+  if (dritte) dritte.disabled = !an;
 }
 function ladeChat(url) {
   stoppeKamera();
@@ -392,13 +385,20 @@ function chatOeffnen() {
 chat.addEventListener('close', stoppeKamera);
 document.addEventListener('visibilitychange', () => { if (document.hidden && strom) { stoppeKamera(); chatAnsicht('keinChat'); } });
 $('btnNeuScan').onclick = scanne;
-$('btnGesendet').onclick = () => { chatSchritt(1); vorlesen(AUFTRAEGE[1]); };
-$('btnKopiert').onclick = () => { chatSchritt(2); vorlesen(AUFTRAEGE[2]); };
-$('btnSchrittZurueck').onclick = () => chatSchritt(auftrag - 1);
-$('auftragTon').onclick = () => vorlesen(AUFTRAEGE[auftrag]);
+$('btnErledigt').onclick = () => {
+  const an = $('btnErledigt').getAttribute('aria-checked') !== 'true';
+  setzeHaken(an);
+  if (an) vorlesen('Super! Jetzt kannst du dein Spiel starten.');
+};
+$('auftragTon').onclick = () => vorlesen(AUFTRAEGE.map((a, i) => `${i + 1}. ${a[1]}.`).join(' ') + ' ' + ERLEDIGT);
+$('auftraege').replaceChildren(...AUFTRAEGE.map(([bild, text], i) => {
+  const li = el('li');
+  li.innerHTML = `<b>${i + 1}</b>${symbol(bild)}`;
+  li.append(el('span', {}, text));
+  return li;
+}));
 $('btnScan').onclick = scanne;
 $('btnCode').onclick = () => ladeChat(CHAT_URL);
-$('btnSteckbrief').onclick = () => kopieren(steckbrief(), $('chatHinweis'));
 
 // ---------- Fenster ----------
 const fenster = $('fenster');

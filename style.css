@@ -103,15 +103,23 @@ dialog .leiste .phasen { margin-inline: auto; }
 #chatHinweis { margin: 0; text-align: center; }
 #chatHinweis:empty { display: none; }
 #anleitung { flex: none; display: flex; flex-direction: column; gap: var(--a-1); padding: var(--a-1) var(--a-2); border-radius: var(--rundung); background: var(--hellblau); color: var(--dunkelblau); }
-.appschild { margin: 0; font-size: 16px; font-weight: 700; text-align: center; }
+.appschild { margin: 0; font-size: var(--gr-1); font-weight: 700; }
 .auftragszeile { display: flex; align-items: center; justify-content: center; gap: var(--a-2); }
-.auftragszeile .ton { width: 48px; height: 48px; padding: 10px; }
-#auftragText { margin: 0; font-size: var(--gr-2); }
-.auftragsknoepfe { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--a-1); }
-.auftragsknoepfe .knopf { min-height: 56px; font-size: 16px; }
-.auftragsknoepfe .knopf.leise { background: var(--weiss); color: var(--dunkelblau); border-color: var(--dunkelblau); }
-.auftragsknoepfe .haupt { margin-left: var(--a-3); font-size: var(--gr-2); border-width: 3px; }
+.auftragszeile .ton { width: 44px; height: 44px; padding: 9px; }
+#auftraege { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--a-1); margin: 0; padding: 0; list-style: none; }
+#auftraege li { display: flex; align-items: center; gap: var(--a-1); padding: 6px var(--a-1); border-radius: var(--rundung); background: var(--weiss); font-size: 16px; line-height: 1.25; }
+#auftraege b { flex: none; display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; background: var(--dunkelblau); color: var(--weiss); }
+#auftraege svg { flex: none; width: 30px; height: 30px; }
+.abschluss { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: var(--a-1) var(--a-3); }
+.abschluss .knopf { min-height: 60px; }
+#btnErledigt { background: var(--weiss); color: var(--dunkelblau); border: 3px solid var(--dunkelblau); }
+.kasten { display: grid; place-items: center; width: 36px; height: 36px; border: 3px solid var(--dunkelblau); border-radius: 6px; }
+.kasten svg { width: 28px; height: 28px; stroke-width: 3.5; visibility: hidden; }
+#btnErledigt[aria-checked="true"] { background: var(--gelb); }
+#btnErledigt[aria-checked="true"] svg { visibility: visible; }
+#btnStarten:disabled { background: var(--silber); }
 .phase:disabled { opacity: .4; }
+@media (orientation: portrait) { #auftraege { grid-template-columns: 1fr; } }
 #tippHinweis { margin: 0; text-align: center; font-size: 16px; }
 #einfuegen { flex: 1; min-height: 0; overflow: auto; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--a-2); }
 .riesig { min-height: 96px; padding: 0 48px; font-size: var(--gr-3); }
