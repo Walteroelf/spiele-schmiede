@@ -4,14 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Spiele-Schmiede</title>
-<link rel="stylesheet" href="design.css?v=2">
-<link rel="stylesheet" href="style.css?v=2">
+<link rel="stylesheet" href="design.css?v=3">
+<link rel="stylesheet" href="style.css?v=3">
 </head>
 <body>
 <header>
   <h1>Spiele-Schmiede</h1>
   <nav>
     <button class="knopf leise" id="btnChat" data-symbol="chat">AIS-Chat</button>
+    <button class="knopf leise" id="btnSpiel" data-symbol="start">Mein Spiel</button>
     <button class="knopf leise" id="btnTasten" data-symbol="tasten">Tasten-Test</button>
     <button class="knopf leise" id="btnHilfe" data-symbol="reparieren">Klappt nicht</button>
     <button class="knopf leise" id="btnLehrer" data-symbol="zahnrad">Lehrkraft</button>
@@ -44,9 +45,11 @@
 
 <dialog id="chatFenster" aria-label="AIS-Chat">
   <div class="chatkopf">
-    <button class="knopf" id="btnScan" data-symbol="qr">QR-Code scannen</button>
+    <button class="knopf gruen" id="btnSteckbrief" data-symbol="kopieren">1. Steckbrief kopieren</button>
+    <button class="knopf gelb" id="btnStarten" data-symbol="start">2. Spiel starten</button>
+    <span class="platz"></span>
+    <button class="knopf leise" id="btnScan" data-symbol="qr">QR-Code</button>
     <button class="knopf leise" id="btnCode" data-symbol="tasten">Code tippen</button>
-    <button class="knopf gruen" id="btnSteckbrief" data-symbol="kopieren">Steckbrief kopieren</button>
     <a class="knopf leise" id="chatTab" href="https://app.ais-chat.schule/login" target="_blank" rel="noopener">Neuer Tab</a>
     <button class="knopf leise" id="chatZu" data-symbol="kreuz">Schließen</button>
   </div>
@@ -55,9 +58,36 @@
   <iframe id="chatRahmen" title="AIS-Chat" allow="clipboard-write; clipboard-read; microphone" hidden></iframe>
 </dialog>
 
+<dialog id="spielFenster" class="voll" aria-label="Mein Spiel">
+  <div class="chatkopf">
+    <button class="knopf leise" id="btnZumChat" data-symbol="chat">Zum Chat</button>
+    <button class="knopf leise" id="btnNochmal" data-symbol="neu">Neu starten</button>
+    <button class="knopf gelb" id="btnNeuerCode" data-symbol="kopieren">Neuen Code einfügen</button>
+    <span class="platz"></span>
+    <button class="knopf leise" id="btnAnsehen" data-symbol="editor">Code ansehen</button>
+    <button class="knopf leise" id="spielZu" data-symbol="kreuz">Schließen</button>
+  </div>
+  <div id="einfuegen">
+    <p id="spielHinweis" class="meldung" role="status"></p>
+    <button class="knopf gruen riesig" id="btnEinfuegen" data-symbol="start">Einfügen und spielen</button>
+    <label for="codeFeld">oder hier einsetzen:</label>
+    <textarea id="codeFeld" placeholder="Hier tippen, dann „Einsetzen“" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></textarea>
+    <button class="knopf leise" id="btnAltes" data-symbol="zurueck">Letztes Spiel</button>
+  </div>
+  <iframe id="spielRahmen" title="Mein Spiel" sandbox="allow-scripts allow-modals" allow="fullscreen" hidden></iframe>
+</dialog>
+
+<dialog id="editorFenster" class="voll" aria-label="HTML-Editor">
+  <div class="chatkopf">
+    <button class="knopf" id="editorZu" data-symbol="zurueck">Zurück zum Spiel</button>
+  </div>
+  <iframe id="editorRahmen" title="HTML-Editor" allow="fullscreen; clipboard-read; clipboard-write"></iframe>
+</dialog>
+
 <noscript>Diese App braucht JavaScript.</noscript>
 <script src="vendor/jsQR.js"></script>
-<script src="symbole.js?v=2"></script>
-<script src="app.js?v=2"></script>
+<script src="symbole.js?v=3"></script>
+<script src="app.js?v=3"></script>
+<script src="spiel.js?v=3"></script>
 </body>
 </html>

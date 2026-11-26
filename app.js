@@ -56,7 +56,7 @@ const FEHLER = [
 const SZENARIO = [
   ['Name', 'Spiele-Schmiede'],
   ['Kurzbeschreibung', 'Wir bauen ein eigenes Spiel und steuern es mit dem MakeyMakey.'],
-  ['Auftrag an die Lernenden', 'Beschreibe deine Spielidee: Was für ein Spiel ist es? Wer spielt mit? Wie gewinnt man?\nKopiere dann den Code in den HTML-Editor und probiere dein Spiel aus.\nWenn etwas nicht klappt, schreibe es hier in den Chat.'],
+  ['Auftrag an die Lernenden', 'Beschreibe deine Spielidee: Was für ein Spiel ist es? Wer spielt mit? Wie gewinnt man?\nKopiere dann den Code und tippe auf „Spiel starten“.\nWenn etwas nicht klappt, schreibe es hier in den Chat.'],
   ['Verhalten', `Du hilfst Schülerinnen und Schülern, ein kleines Spiel in HTML zu programmieren.
 
 So sprichst du:
@@ -85,7 +85,6 @@ Regeln für jedes Spiel:
 ];
 
 const CHAT_URL = 'https://app.ais-chat.schule/login';
-const EDITOR_URL = 'https://walteroelf.github.io/html-editor/';
 const FERTIG = SCHRITTE.length + 1;           // 0 … n-1 Auswahl, n Wunsch, n+1 Steckbrief
 const $ = id => document.getElementById(id);
 
@@ -168,10 +167,9 @@ function steckbrief() {
 }
 
 function weiterKnoepfe() {
-  const e = el('a', { class: 'knopf gelb gross', href: EDITOR_URL, target: '_blank', rel: 'noopener' });
-  e.innerHTML = symbol('editor');
-  e.append('3. HTML-Editor öffnen');
-  return el('div', { class: 'reihe' }, knopf('2. AIS-Chat öffnen', 'chat', 'gross', chatOeffnen), e);
+  return el('div', { class: 'reihe' },
+    knopf('2. AIS-Chat öffnen', 'chat', 'gross', chatOeffnen),
+    knopf('3. Spiel starten', 'start', 'gelb gross', () => einfuegenUndSpielen()));
 }
 
 // Bilderablauf oben: gewählte Bilder ersetzen die Schritt-Symbole

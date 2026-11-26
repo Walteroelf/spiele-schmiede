@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="theme-color" content="#4DB2E6">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="HTML-Editor mit Live-Vorschau, Speichern und Drucken. Alles bleibt auf dem Gerät.">
+<title>HTML-Editor</title>
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="stylesheet" href="design.css?v=3">
+<style>
+  /* Gemeinsames Design der Unterrichts-Apps (Olympia 72), Regeln in DESIGN.md.
+     Hier nur, was dieser Editor selbst braucht. */
+  @font-face{ font-family:"Andika"; font-weight:400; font-display:swap; src:url("schriften/andika-400.woff2") format("woff2"); }
+  @font-face{ font-family:"Andika"; font-weight:700; font-display:swap; src:url("schriften/andika-700.woff2") format("woff2"); }
+
+  /* Der Editor hat einen eigenen Hell/Dunkel-Schalter. Er startet mit der Einstellung des Geräts.
+     Darum werden die Rollen aus design.css hier für beide Fälle fest gesetzt. */
+  :root[data-theme="light"] {
+    color-scheme: light;
+    --hg:#EEF5FA; --karte:#FFFFFF; --flaeche-2:#DCE7F0; --auswahl:#DCEFFA;
+    --text:var(--dunkelblau); --leise:#4A5E74; --linie:#D5DEE6; --rand:#6E8094;
+    --akzent-text:var(--blau); --hinweis-text:var(--orange-text);
+    /* Syntax-Farben auf Weiß, alle mind. 4,5 : 1 */
+    --tag:var(--gruen-text); --attr:var(--blau); --val:var(--orange-text); --comment:var(--leise); --doctype:var(--dunkelblau);
+    --sel:rgba(77,178,230,.35); --caret:var(--dunkelblau);
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --hg:#1D4F80; --karte:#23598D; --flaeche-2:#2A6498; --auswahl:#2F6CA3;
+    --text:#E8F1F8; --leise:#D6E7F5; --linie:#3A80BC; --rand:#B4D2EC;
+    --akzent-text:#B5E2FC; --hinweis-text:#FFC266;
+    --tag:#BFE39A; --attr:#B5E2FC; --val:#FFC266; --comment:var(--leise); --doctype:var(--gelb);
+    --sel:rgba(77,178,230,.4); --caret:#E8F1F8;
+  }
+  :root { --mono:Consolas,Menlo,"Courier New",monospace; --klein-hoehe:48px; }
+
+  * { -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; margin: 0; }
+  body { display: flex; flex-direction: column; font-size: 16px; background: var(--hg); color: var(--text); overscroll-behavior: none; }
+
+  .band { display: flex; height: 6px; flex: none; }
+  .band i { flex: 1; }
+  .band i:nth-child(1){ background:var(--hellblau); } .band i:nth-child(2){ background:var(--blau); }
+  .band i:nth-child(3){ background:var(--gruen); } .band i:nth-child(4){ background:var(--hellgruen); }
+  .band i:nth-child(5){ background:var(--gelb); } .band i:nth-child(6){ background:var(--orange); }
+  .band i:nth-child(7){ background:var(--silber); }
+
+  header { position: relative; z-index: 8; padding: 4px var(--a-1); background: var(--karte); border-bottom: var(--rand-breite) solid var(--linie);
+    display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  header .btn { min-height: 40px; padding: 2px 10px; font-size: 15px; }
+  h1 { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); margin: 0; }
+  .luecke { flex: 1; }
+  .gruppe { display: flex; align-items: center; gap: var(--a-1); flex-wrap: wrap; }
+  #mehr summary { list-style: none; cursor: pointer; }
+  #mehr summary::-webkit-details-marker { display: none; }
+  #menue { position: absolute; right: var(--a-1); top: 100%; width: min(280px, calc(100vw - 16px)); max-height: calc(100vh - 80px); overflow: auto;
+    display: flex; flex-direction: column; gap: 6px; padding: var(--a-1); background: var(--karte);
+    border: var(--rand-breite) solid var(--rand); border-radius: var(--rundung); }
+  #menue .btn { justify-content: center; flex: none; }
+  #menue hr { width: 100%; margin: 2px 0; border: 0; border-top: var(--rand-breite) solid var(--linie); }
+  #menue label { color: var(--leise); }
+  #menue input[type=text], #menue select { font-size: 16px; padding: 4px 10px; min-height: 40px;
+    border: var(--rand-breite) solid var(--rand); border-radius: var(--rundung); background: var(--karte); color: var(--text); }
+  #menue input::placeholder { color: var(--leise); }
+  .btn { display: inline-flex; align-items: center; gap: 6px; font-size: 16px; padding: 6px 14px; min-height: var(--klein-hoehe);
+    background: var(--karte); color: var(--text); border: var(--rand-breite) solid var(--rand); border-radius: var(--rundung); }
+  .btn:active { transform: translateY(2px); }
+  .btn.primary { background: var(--hellblau); border-color: var(--hellblau); color: var(--dunkelblau); }
+
+  main { flex: 1; display: flex; min-height: 0; position: relative; }
+  #editor { flex: 0 0 50%; display: flex; min-width: 80px; min-height: 80px; background: var(--karte); }
+  #zeilen { flex: none; min-width: 3.2em; padding: 12px 8px 12px 0; text-align: right; overflow: hidden;
+    background: var(--flaeche-2); color: var(--leise); border-right: var(--rand-breite) solid var(--linie);
+    font: 14px/1.5 var(--mono); white-space: pre; user-select: none; }
+  #feld { flex: 1; position: relative; min-width: 0; }
+  #feld pre, #feld textarea {
+    position: absolute; inset: 0; margin: 0; padding: 12px; border: 0; width: 100%; height: 100%;
+    font: 14px/1.5 var(--mono); tab-size: 2; white-space: pre; overflow: auto; letter-spacing: 0; word-spacing: 0; }
+  #feld pre { color: var(--text); pointer-events: none; overflow: hidden; }
+  #feld textarea { background: transparent; color: transparent; caret-color: var(--caret);
+    resize: none; outline: none; -webkit-text-fill-color: transparent; }
+  /* Fokus im Schreibfeld: gelber Rahmen nach innen, damit er nicht abgeschnitten wird */
+  #feld textarea:focus-visible { outline: 3px solid var(--gelb); outline-offset: -3px; box-shadow: none; }
+  #feld textarea::selection { background: var(--sel); -webkit-text-fill-color: transparent; }
+  #feld textarea::placeholder { color: var(--leise); -webkit-text-fill-color: var(--leise); }
+  .t { color: var(--tag); } .a { color: var(--attr); } .v { color: var(--val); }
+  .c { color: var(--comment); font-style: italic; } .d { color: var(--doctype); }
+
+  #trenner { flex: none; width: 12px; background: var(--silber); cursor: col-resize; touch-action: none; position: relative; }
+  #trenner::after { content: ""; position: absolute; left: 3px; right: 3px; top: 50%; height: 40px; margin-top: -20px;
+    border-left: 2px solid var(--dunkelblau); border-right: 2px solid var(--dunkelblau); }
+  #trenner:hover, #trenner.aktiv { background: var(--hellblau); }
+  #vorschau { flex: 1; min-width: 80px; min-height: 80px; border: 0; background: #fff; }
+  main.ziehen iframe { pointer-events: none; }
+  #vorschau:fullscreen { width: 100%; height: 100%; }
+  body.vollbild #vorschau { position: fixed; inset: 0; z-index: 20; width: 100%; height: 100%; }
+  #vbEnde { display: none; position: fixed; top: 10px; right: 10px; z-index: 21; }
+  body.vollbild #vbEnde { display: inline-flex; }
+
+  #drop { display: none; position: absolute; inset: 0; z-index: 5; background: rgba(77,178,230,.94); color: var(--dunkelblau);
+    font-size: var(--gr-3); align-items: center; justify-content: center; pointer-events: none;
+    border: 6px dashed var(--dunkelblau); }
+  main.drag #drop { display: flex; }
+
+  #projektName { font-weight: 700; max-width: 16em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  [hidden] { display: none !important; }
+  #start { position: fixed; inset: 6px 0 0 0; z-index: 10; overflow: auto; background: var(--hg); padding: var(--a-3) var(--a-2) 48px; }
+  .innen { max-width: 1000px; margin: 0 auto; }
+  #start h2 { margin: 0 0 var(--a-1); font-size: var(--gr-3); line-height: 1.15; }
+  #start p { margin: 0 0 var(--a-2); color: var(--leise); }
+  #kacheln { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr)); gap: var(--a-2); margin: var(--a-3) 0; }
+  .kachel { background: var(--karte); border: var(--rand-breite) solid var(--linie); border-top: 12px solid var(--hellblau);
+    border-radius: var(--rundung); padding: var(--a-2); display: flex; flex-direction: column; gap: var(--a-2); }
+  .kachel h3 { margin: 0; font-size: var(--gr-2); line-height: 1.2; overflow-wrap: anywhere; }
+  .kachel .btn { justify-content: center; }
+  .kachel .btn.primary { min-height: var(--knopf-hoehe); font-size: var(--gr-1); }
+  .kachel .gruppe .btn { flex: 1; padding: 4px 8px; }
+
+  @media (max-width: 700px) {
+    main { flex-direction: column; }
+    #trenner { width: auto; height: 12px; cursor: row-resize; }
+    #trenner::after { left: 50%; right: auto; top: 3px; bottom: 3px; height: auto; width: 40px; margin: 0 0 0 -20px;
+      border: 0; border-top: 2px solid var(--dunkelblau); border-bottom: 2px solid var(--dunkelblau); }
+  }
+  @media print {
+    .band, header, #editor, #trenner, #start { display: none; }
+    main { display: block; }
+    #vorschau { width: 100%; height: 100vh; }
+  }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-ordner" viewBox="0 0 24 24"><path d="M3 6.5h6l2 2.5h10v10.500H3z"/></symbol>
+  <symbol id="i-anzeigen" viewBox="0 0 24 24"><path d="M7 4.5v15l12-7.5z"/></symbol>
+  <symbol id="i-vollbild" viewBox="0 0 24 24"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/></symbol>
+  <symbol id="i-mond" viewBox="0 0 24 24"><path d="M19.5 14.5A8 8 0 0 1 9.5 4.5a8 8 0 1 0 10 10z"/></symbol>
+  <symbol id="i-sonne" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/></symbol>
+  <symbol id="i-schliessen" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+</svg>
+<div class="band" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+<header>
+  <h1>HTML-Editor</h1>
+  <button class="btn" id="btnProjekte"><svg class="symbol" aria-hidden="true"><use href="#i-ordner"/></svg>Meine Projekte</button>
+  <span id="projektName"></span>
+  <button class="btn primary" id="btnAlsProjekt">Als Projekt speichern</button>
+  <span class="luecke"></span>
+  <button class="btn" id="btnZurueck" title="Den vorherigen Code wiederherstellen" hidden>Rückgängig</button>
+  <button class="btn" id="btnErsetzen" title="Den gesamten Code durch den Inhalt der Zwischenablage ersetzen">Code ersetzen</button>
+  <button class="btn" id="btnAnzeigen" title="Vorschau neu starten und anklicken (Strg/Cmd + Enter)"><svg class="symbol" aria-hidden="true"><use href="#i-anzeigen"/></svg>Anzeigen</button>
+  <button class="btn" id="btnVollbild" title="Vorschau im Vollbild (Esc beendet)"><svg class="symbol" aria-hidden="true"><use href="#i-vollbild"/></svg>Vollbild</button>
+  <details id="mehr">
+    <summary class="btn">Mehr ▾</summary>
+    <div id="menue">
+      <button class="btn" id="btnOeffnen" title="HTML-Datei laden">Öffnen</button>
+      <button class="btn" id="btnLeeren">Leeren</button>
+      <button class="btn" id="btnTheme" title="Hell/Dunkel umschalten"><svg class="symbol" aria-hidden="true"><use href="#i-mond"/></svg>Dunkel</button>
+      <hr>
+      <input type="text" id="dateiname" placeholder="Dateiname (optional)">
+      <button class="btn" id="btnSpeichern">Als Datei speichern</button>
+      <hr>
+      <label for="rand">Druckrand</label>
+      <select id="rand">
+      <option value="10">10 mm</option><option value="15">15 mm</option>
+      <option value="20" selected>20 mm</option><option value="25">25 mm</option><option value="30">30 mm</option>
+    </select>
+      <select id="ausrichtung" aria-label="Ausrichtung">
+      <option value="portrait" selected>A4 hoch</option><option value="landscape">A4 quer</option>
+    </select>
+      <button class="btn" id="btnDrucken">Drucken</button>
+      <input type="file" id="datei" accept=".html,.htm,text/html,text/plain" hidden>
+    </div>
+  </details>
+</header>
+
+<main id="main">
+  <div id="editor">
+    <div id="zeilen" aria-hidden="true">1</div>
+    <div id="feld">
+      <pre id="hl" aria-hidden="true"></pre>
+      <textarea id="code" spellcheck="false" autocapitalize="off" autocomplete="off"
+        placeholder="Hier HTML-Code einfügen oder eine Datei hierher ziehen …"></textarea>
+    </div>
+  </div>
+  <div id="trenner" role="separator" aria-orientation="vertical" tabindex="0" title="Ziehen zum Verschieben"></div>
+  <iframe id="vorschau" title="Vorschau" allow="fullscreen" allowfullscreen sandbox="allow-scripts allow-forms allow-modals allow-same-origin"></iframe>
+  <button class="btn primary" id="vbEnde" type="button"><svg class="symbol" aria-hidden="true"><use href="#i-schliessen"/></svg>Vollbild beenden</button>
+  <div id="drop">HTML-Datei hier ablegen</div>
+</main>
+
+<section id="start" aria-labelledby="startTitel">
+  <div class="innen">
+    <h2 id="startTitel">Meine Projekte</h2>
+    <p>Die Projekte werden nur in diesem Browser gespeichert. Sichere die Sammlung ab und zu als Datei.</p>
+    <div class="gruppe">
+      <button class="btn primary" id="btnNeu">+ Neues Projekt</button>
+      <button class="btn" id="btnEditor">Ohne Projekt zum Editor</button>
+      <button class="btn" id="btnSichern">Sammlung sichern</button>
+      <button class="btn" id="btnLaden">Sammlung laden</button>
+      <input type="file" id="sammlung" accept=".json,application/json" hidden>
+    </div>
+    <div id="kacheln"></div>
+  </div>
+</section>
+
+<script>
+(function () {
+  const $ = id => document.getElementById(id);
+  const code = $('code'), hl = $('hl'), zeilen = $('zeilen'), vorschau = $('vorschau');
+  const main = $('main'), editor = $('editor'), trenner = $('trenner');
+  const rand = $('rand'), ausrichtung = $('ausrichtung'), dateiname = $('dateiname');
+  const root = document.documentElement;
+
+  // ---------- Speicher (localStorage, fehlertolerant) ----------
+  const store = {
+    get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+    set(k, v) { try { localStorage.setItem(k, v); return true; } catch (e) { return false; } }
+  };
+
+  // ---------- Syntax-Highlighting ----------
+  const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+  function attrs(s) {
+    let out = '', last = 0, m;
+    const re = /([^\s"'<>\/=]+)(\s*=\s*)?("[^"]*"?|'[^']*'?|[^\s"'>]+)?/g;
+    while ((m = re.exec(s)) !== null) {
+      if (m[0] === '') { re.lastIndex++; continue; }
+      out += esc(s.slice(last, m.index)) + '<span class="a">' + esc(m[1]) + '</span>';
+      if (m[2]) out += esc(m[2]);
+      if (m[3]) out += '<span class="v">' + esc(m[3]) + '</span>';
+      last = m.index + m[0].length;
+    }
+    return out + esc(s.slice(last));
+  }
+
+  function highlight(src) {
+    const re = /<!--[\s\S]*?(?:-->|$)|<![^>]*>?|<\/?[a-zA-Z][^>]*>?|[^<]+|</g;
+    return src.replace(re, tok => {
+      if (tok.startsWith('<!--')) return '<span class="c">' + esc(tok) + '</span>';
+      if (tok.startsWith('<!')) return '<span class="d">' + esc(tok) + '</span>';
+      const m = /^(<\/?)([^\s\/>]+)([\s\S]*?)(\/?>?)$/.exec(tok);
+      if (m) return '<span class="t">' + esc(m[1] + m[2]) + '</span>' + attrs(m[3]) + '<span class="t">' + esc(m[4]) + '</span>';
+      return esc(tok);
+    });
+  }
+
+  let letzteZeilen = 0;
+  function render() {
+    hl.innerHTML = highlight(code.value) + '\n';
+    const n = code.value.split('\n').length;
+    if (n !== letzteZeilen) {
+      let t = ''; for (let i = 1; i <= n; i++) t += i + '\n';
+      zeilen.textContent = t.slice(0, -1);
+      letzteZeilen = n;
+    }
+    syncScroll();
+  }
+  function syncScroll() {
+    hl.scrollTop = code.scrollTop; hl.scrollLeft = code.scrollLeft;
+    zeilen.scrollTop = code.scrollTop;
+  }
+
+  // ---------- Vorschau ----------
+  let timer;
+  function vorschauAktualisieren() { vorschau.srcdoc = code.value; }
+
+  // Vorschau neu laden und den Fokus hineinsetzen, damit z. B. Spiele die Tastatur sofort bekommen.
+  // (Bewusst nicht bei jeder Eingabe, sonst würde das Tippen im Editor unterbrochen.)
+  function fokusInVorschau() { try { vorschau.contentWindow.focus(); } catch (e) {} }
+  function anzeigen() {
+    vorschau.addEventListener('load', fokusInVorschau, { once: true });
+    vorschauAktualisieren();
+  }
+  $('btnAnzeigen').onclick = anzeigen;
+  code.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); anzeigen(); }
+  });
+
+  // Vollbild: echte Fullscreen-API, sonst Behelfs-Vollbild über die ganze Seite
+  const vbEnde = $('vbEnde');
+  const nativ = vorschau.requestFullscreen || vorschau.webkitRequestFullscreen;
+  const imVollbild = () => document.fullscreenElement === vorschau || document.webkitFullscreenElement === vorschau || document.body.classList.contains('vollbild');
+  let zurueckZurListe = false;
+  function vollbildEnde() {
+    const behelfAktiv = document.body.classList.contains('vollbild');
+    document.body.classList.remove('vollbild');
+    if (behelfAktiv && zurueckZurListe) zeigeStart();
+    if (document.fullscreenElement) document.exitFullscreen();
+    else if (document.webkitFullscreenElement) document.webkitExitFullscreen();
+  }
+  function vollbildStart() {
+    if (!code.value.trim()) { alert('Es gibt noch nichts anzuzeigen. Bitte zuerst HTML-Code einfügen.'); return; }
+    if (nativ) {
+      try {
+        const p = (vorschau.requestFullscreen || vorschau.webkitRequestFullscreen).call(vorschau);
+        if (p && p.catch) p.catch(behelf);
+        return;
+      } catch (e) {}
+    }
+    behelf();
+  }
+  function behelf() { document.body.classList.add('vollbild'); fokusInVorschau(); }
+  $('btnVollbild').onclick = () => imVollbild() ? vollbildEnde() : vollbildStart();
+  vbEnde.onclick = vollbildEnde;
+  ['fullscreenchange', 'webkitfullscreenchange'].forEach(ev =>
+    document.addEventListener(ev, () => {
+      if (imVollbild()) fokusInVorschau(); else if (zurueckZurListe) zeigeStart();
+    }));
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && document.body.classList.contains('vollbild')) vollbildEnde(); });
+  function geaendert() {
+    render();
+    codeSpeichern();
+    clearTimeout(timer); timer = setTimeout(vorschauAktualisieren, 150);
+  }
+  code.addEventListener('input', geaendert);
+  code.addEventListener('scroll', syncScroll);
+
+  // Tab-Taste fügt Einrückung ein
+  code.addEventListener('keydown', e => {
+    if (e.key === 'Tab' && !e.shiftKey && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      e.preventDefault();
+      code.setRangeText('  ', code.selectionStart, code.selectionEnd, 'end');
+      geaendert();
+    }
+  });
+
+  // ---------- Buttons ----------
+  $('btnLeeren').onclick = () => {
+    if (code.value && !confirm('Editor wirklich leeren?')) return;
+    code.value = ''; geaendert(); vorschauAktualisieren();
+  };
+
+  // ---------- Gesamten Code aus der Zwischenablage ersetzen ----------
+  let vorher = null;
+  function codeSetzen(text) { code.value = text; code.scrollTop = code.scrollLeft = 0; geaendert(); }
+  // Falls der Browser das Lesen nicht erlaubt: alles markieren, dann überschreibt Einsetzen den ganzen Code
+  function vonHand() {
+    alert('Die Zwischenablage konnte nicht gelesen werden. Nach „OK“ ist der ganze Code markiert: Jetzt „Einsetzen“ wählen (oder Strg/Cmd + V).');
+    code.focus(); code.select();
+  }
+  $('btnErsetzen').onclick = async () => {
+    const projektVorher = aktuell;
+    let text;
+    try { text = await navigator.clipboard.readText(); } catch (e) { vonHand(); return; }
+    if (aktuell !== projektVorher) return;
+    if (!text.trim()) { alert('Die Zwischenablage ist leer. Bitte zuerst den neuen Code kopieren.'); return; }
+    if (text === code.value) { alert('Dieser Code steht bereits im Editor.'); return; }
+    vorher = code.value;
+    codeSetzen(text);
+    $('btnZurueck').hidden = false;
+  };
+  $('btnZurueck').onclick = () => {
+    if (vorher === null) return;
+    codeSetzen(vorher);
+    vorher = null; $('btnZurueck').hidden = true;
+  };
+
+  $('btnDrucken').onclick = () => {
+    if (!code.value.trim()) { alert('Es gibt noch nichts zu drucken. Bitte zuerst HTML-Code einfügen.'); return; }
+    vorschauAktualisieren();
+    const doc = vorschau.contentDocument, win = vorschau.contentWindow;
+    const style = doc.createElement('style');
+    style.textContent = '@page { size: A4 ' + ausrichtung.value + '; margin: ' + rand.value + 'mm; }';
+    doc.head.appendChild(style);
+    win.addEventListener('afterprint', () => style.remove(), { once: true });
+    win.focus(); win.print();
+  };
+
+  $('btnSpeichern').onclick = () => {
+    if (!code.value.trim()) { alert('Es gibt noch nichts zu speichern. Bitte zuerst HTML-Code einfügen.'); return; }
+    let name = dateiname.value.trim().replace(/[\\/:*?"<>|]/g, '_') || 'meine-seite';
+    if (!/\.html?$/i.test(name)) name += '.html';
+    const url = URL.createObjectURL(new Blob([code.value], { type: 'text/html;charset=utf-8' }));
+    const a = document.createElement('a');
+    a.href = url; a.download = name;
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+  };
+
+  [rand, ausrichtung, dateiname].forEach(el => {
+    const k = 'spiele-schmiede-editor:' + el.id;
+    const v = store.get(k); if (v !== null) el.value = v;
+    el.addEventListener('input', () => store.set(k, el.value));
+  });
+
+  // ---------- Datei laden ----------
+  function dateiLaden(f) {
+    if (!f) return;
+    const r = new FileReader();
+    r.onload = () => {
+      const pr = aktuellesProjekt();
+      if (pr && code.value.trim() && !confirm('Die Datei ersetzt den Inhalt des Projekts „' + pr.name + '“. Fortfahren?')) return;
+      code.value = String(r.result); geaendert(); vorschauAktualisieren();
+      dateiname.value = f.name.replace(/\.html?$/i, ''); store.set('spiele-schmiede-editor:dateiname', dateiname.value);
+    };
+    r.readAsText(f);
+  }
+  $('btnOeffnen').onclick = () => $('datei').click();
+  $('datei').onchange = e => { dateiLaden(e.target.files[0]); e.target.value = ''; };
+
+  let dragZaehler = 0;
+  const hatDatei = e => e.dataTransfer && Array.from(e.dataTransfer.types || []).includes('Files');
+  window.addEventListener('dragenter', e => { if (hatDatei(e)) { e.preventDefault(); if (!start.hidden) return; dragZaehler++; main.classList.add('drag'); } });
+  window.addEventListener('dragleave', e => { if (hatDatei(e) && --dragZaehler <= 0) { dragZaehler = 0; main.classList.remove('drag'); } });
+  window.addEventListener('dragover', e => { if (hatDatei(e)) e.preventDefault(); });
+  window.addEventListener('drop', e => {
+    if (!hatDatei(e)) return;
+    e.preventDefault(); dragZaehler = 0; main.classList.remove('drag');
+    if (!start.hidden) return;
+    dateiLaden(e.dataTransfer.files[0]);
+  });
+
+  // ---------- Dunkelmodus ----------
+  const btnTheme = $('btnTheme');
+  function setTheme(t, speichern) {
+    root.setAttribute('data-theme', t);
+    btnTheme.innerHTML = t === 'dark'
+      ? '<svg class="symbol" aria-hidden="true"><use href="#i-sonne"/></svg>Hell'
+      : '<svg class="symbol" aria-hidden="true"><use href="#i-mond"/></svg>Dunkel';
+    if (speichern) store.set('spiele-schmiede-editor:theme', t);
+  }
+  setTheme(store.get('spiele-schmiede-editor:theme') ||
+    (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'), false);
+  btnTheme.onclick = () => setTheme(root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark', true);
+
+  // ---------- Verschiebbarer Trenner ----------
+  const vertikal = () => matchMedia('(max-width: 700px)').matches;
+  function setAnteil(p) {
+    p = Math.min(85, Math.max(15, p));
+    editor.style.flex = '0 0 ' + p + '%';
+    trenner.setAttribute('aria-valuenow', Math.round(p));
+    return p;
+  }
+  let anteil = parseFloat(store.get('spiele-schmiede-editor:anteil'));
+  anteil = setAnteil(isNaN(anteil) ? 50 : anteil);
+
+  trenner.addEventListener('pointerdown', e => {
+    e.preventDefault();
+    trenner.setPointerCapture(e.pointerId);
+    trenner.classList.add('aktiv'); main.classList.add('ziehen');
+  });
+  trenner.addEventListener('pointermove', e => {
+    if (!trenner.hasPointerCapture(e.pointerId)) return;
+    const r = main.getBoundingClientRect();
+    anteil = setAnteil(vertikal() ? (e.clientY - r.top) / r.height * 100 : (e.clientX - r.left) / r.width * 100);
+  });
+  const ende = e => {
+    trenner.classList.remove('aktiv'); main.classList.remove('ziehen');
+    store.set('spiele-schmiede-editor:anteil', anteil);
+  };
+  trenner.addEventListener('pointerup', ende);
+  trenner.addEventListener('pointercancel', ende);
+  trenner.addEventListener('dblclick', () => { anteil = setAnteil(50); store.set('spiele-schmiede-editor:anteil', 50); });
+  trenner.addEventListener('keydown', e => {
+    const links = vertikal() ? 'ArrowUp' : 'ArrowLeft', rechts = vertikal() ? 'ArrowDown' : 'ArrowRight';
+    if (e.key === links || e.key === rechts) {
+      e.preventDefault();
+      anteil = setAnteil(anteil + (e.key === rechts ? 2 : -2));
+      store.set('spiele-schmiede-editor:anteil', anteil);
+    }
+  });
+
+  // ---------- Menü „Mehr“ schließt sich von selbst ----------
+  const mehr = $('mehr');
+  const menueZu = () => { mehr.open = false; };
+  document.addEventListener('click', e => { if (!mehr.contains(e.target) || e.target.closest('#menue button')) menueZu(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') menueZu(); });
+  window.addEventListener('blur', () => { if (document.activeElement === vorschau) menueZu(); });
+  $('btnProjekte').addEventListener('click', menueZu);
+
+  // ---------- Meine Projekte ----------
+  const K_PROJEKTE = 'spiele-schmiede-editor:projekte', K_AKTUELL = 'spiele-schmiede-editor:aktuell', K_ENTWURF = 'spiele-schmiede-editor:code';
+  const start = $('start'), kacheln = $('kacheln');
+  let projekte = [], aktuell = store.get(K_AKTUELL) || '', gewarnt = false;
+  const roh = store.get(K_PROJEKTE);
+  const gueltig = p => p && typeof p.name === 'string' && typeof p.code === 'string';
+  try {
+    const liste = JSON.parse(roh || '[]');
+    if (!Array.isArray(liste)) throw new Error();
+    projekte = liste.filter(gueltig);
+  } catch (e) { store.set(K_PROJEKTE + ':defekt', roh); }
+
+  const neueId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+  const aktuellesProjekt = () => projekte.find(p => p.id === aktuell);
+  const speicherFehler = () => alert('Speichern nicht möglich: Der Browser-Speicher ist voll oder gesperrt. Bitte den Code als Datei sichern.');
+  // Liste nur übernehmen, wenn sie wirklich gespeichert wurde
+  function listeSpeichern(neu) {
+    if (!store.set(K_PROJEKTE, JSON.stringify(neu))) { speicherFehler(); return false; }
+    projekte = neu; return true;
+  }
+  function codeSpeichern() {
+    const pr = aktuellesProjekt();
+    let ok;
+    if (pr) { pr.code = code.value; ok = store.set(K_PROJEKTE, JSON.stringify(projekte)); }
+    else ok = store.set(K_ENTWURF, code.value);
+    if (!ok && !gewarnt) { gewarnt = true; speicherFehler(); }
+  }
+  function freierName(name, liste) {
+    let n = name, i = 2;
+    while (liste.some(p => p.name === n)) n = name + ' (' + i++ + ')';
+    return n;
+  }
+  function nameErfragen(frage, vorgabe) {
+    const n = prompt(frage, vorgabe || '');
+    return n === null ? '' : n.trim().slice(0, 80);
+  }
+  function kopfAktualisieren() {
+    const pr = aktuellesProjekt();
+    $('projektName').textContent = pr ? 'Projekt: ' + pr.name : 'Ohne Projekt';
+    $('btnAlsProjekt').hidden = !!pr;
+  }
+  function waehle(id) {
+    clearTimeout(timer);
+    aktuell = id; store.set(K_AKTUELL, id);
+    vorher = null; $('btnZurueck').hidden = true;
+    const pr = aktuellesProjekt();
+    code.value = pr ? pr.code : (store.get(K_ENTWURF) || '');
+    dateiname.value = pr ? pr.name : ''; store.set('spiele-schmiede-editor:dateiname', dateiname.value);
+    code.scrollTop = code.scrollLeft = 0;
+    render(); kopfAktualisieren();
+  }
+  function zeigeEditor() {
+    start.hidden = true;
+    document.querySelector('header').inert = false; main.inert = false;
+  }
+  function zeigeStart() {
+    zurueckZurListe = false;
+    clearTimeout(timer);
+    vorschau.srcdoc = '';   // laufendes Projekt beenden (Ton, Timer)
+    document.querySelector('header').inert = true; main.inert = true;
+    start.hidden = false;
+    zeichneListe();
+  }
+  function knopf(text, klasse, aktion) {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'btn' + klasse; b.textContent = text; b.onclick = aktion;
+    return b;
+  }
+  function zeichneListe() {
+    kacheln.textContent = '';
+    if (!projekte.length) {
+      const leer = document.createElement('p');
+      leer.textContent = 'Noch keine Projekte. Tippe auf „+ Neues Projekt“.';
+      kacheln.appendChild(leer);
+    }
+    projekte.slice().sort((a, b) => a.name.localeCompare(b.name, 'de')).forEach(pr => {
+      const k = document.createElement('article'); k.className = 'kachel';
+      const h = document.createElement('h3'); h.textContent = pr.name;
+      const g = document.createElement('div'); g.className = 'gruppe';
+      g.append(
+        knopf('Bearbeiten', '', () => { waehle(pr.id); zeigeEditor(); vorschauAktualisieren(); }),
+        knopf('Umbenennen', '', () => {
+          const n = nameErfragen('Neuer Name:', pr.name);
+          if (!n || n === pr.name) return;
+          const name = freierName(n, projekte.filter(p => p.id !== pr.id));
+          if (listeSpeichern(projekte.map(p => p.id === pr.id ? Object.assign({}, p, { name }) : p))) {
+            if (aktuell === pr.id) waehle(pr.id);
+            zeichneListe();
+          }
+        }),
+        knopf('Löschen', '', () => {
+          if (!confirm('Projekt „' + pr.name + '“ endgültig löschen?')) return;
+          if (listeSpeichern(projekte.filter(p => p.id !== pr.id))) {
+            if (aktuell === pr.id) waehle('');
+            zeichneListe();
+          }
+        })
+      );
+      const los = knopf('', ' primary', () => {
+        waehle(pr.id); zeigeEditor(); anzeigen();
+        if (code.value.trim()) { zurueckZurListe = true; vollbildStart(); }
+      });
+      los.innerHTML = '<svg class="symbol" aria-hidden="true"><use href="#i-anzeigen"/></svg>Starten';
+      k.append(h, los, g);
+      kacheln.appendChild(k);
+    });
+  }
+  function projektAnlegen(inhalt) {
+    const n = nameErfragen('Name des neuen Projekts:');
+    if (!n) return false;
+    const pr = { id: neueId(), name: freierName(n, projekte), code: inhalt };
+    if (!listeSpeichern(projekte.concat(pr))) return false;
+    waehle(pr.id); return true;
+  }
+  $('btnProjekte').onclick = zeigeStart;
+  $('btnNeu').onclick = () => { if (projektAnlegen('')) { zeigeEditor(); vorschauAktualisieren(); code.focus(); } };
+  $('btnAlsProjekt').onclick = () => {
+    // Der Entwurf wandert ins Projekt
+    if (projektAnlegen(code.value)) store.set(K_ENTWURF, '');
+  };
+  $('btnEditor').onclick = () => { waehle(''); zeigeEditor(); vorschauAktualisieren(); };
+
+  $('btnSichern').onclick = () => {
+    if (!projekte.length) { alert('Es gibt noch keine Projekte zum Sichern.'); return; }
+    const daten = JSON.stringify({ app: 'html-editor', version: 1, projekte }, null, 2);
+    const url = URL.createObjectURL(new Blob([daten], { type: 'application/json' }));
+    const a = document.createElement('a');
+    a.href = url; a.download = 'meine-projekte.json';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  };
+  $('btnLaden').onclick = () => $('sammlung').click();
+  $('sammlung').onchange = e => {
+    const f = e.target.files[0]; e.target.value = '';
+    if (!f) return;
+    const r = new FileReader();
+    r.onload = () => {
+      let neu;
+      try { neu = JSON.parse(r.result).projekte.filter(gueltig); } catch (x) { neu = null; }
+      if (!neu || !neu.length) { alert('Diese Datei enthält keine Projekte.'); return; }
+      if (!confirm(neu.length + ' Projekt(e) aus der Datei laden? Der Code darin wird beim Starten ausgeführt, lade nur Dateien, denen du vertraust.')) return;
+      const liste = projekte.slice();
+      neu.forEach(p => {
+        if (liste.some(q => q.name === p.name && q.code === p.code)) return;
+        liste.push({ id: neueId(), name: freierName(p.name, liste), code: p.code });
+      });
+      if (listeSpeichern(liste)) zeichneListe();
+    };
+    r.readAsText(f);
+  };
+
+  // ---------- Start ----------
+  waehle(aktuellesProjekt() ? aktuell : '');
+  zeigeStart();
+  // Spiele-Schmiede: „Code ansehen“ öffnet direkt den Entwurf
+  if (location.hash === '#entwurf') $('btnEditor').click();
+})();
+</script>
+</body>
+</html>
