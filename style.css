@@ -67,6 +67,7 @@ textarea { min-height: 72px; resize: none; }
   border: 2px solid var(--rand); border-radius: var(--rundung); background: var(--karte); }
 .zettel svg { flex: none; width: 32px; height: 32px; stroke-width: 1.6; }
 .reihe { display: flex; flex-wrap: wrap; gap: var(--a-2); justify-content: center; align-items: center; margin: var(--a-2) 0; }
+.reihe.links { justify-content: flex-start; }
 .gross { min-height: 80px; font-size: var(--gr-2); }
 pre { white-space: pre-wrap; font: inherit; background: var(--karte); border: 2px solid var(--linie); border-radius: var(--rundung); padding: var(--a-2); user-select: text; }
 .meldung { margin: 0; text-align: center; font-size: var(--gr-2); min-height: 1.4em; }

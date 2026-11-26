@@ -73,35 +73,42 @@ const FEHLER = [
   ['uhr', 'Hört nie auf', 'Das Spiel läuft einfach durch. Es braucht ein klares Ende mit „Gewonnen“ oder „Verloren“ und einen Knopf zum Nochmalspielen.']
 ];
 
+// Überschriften und Reihenfolge wie im AIS-Chat-Fenster „Lernszenario“
 const SZENARIO = [
-  ['Name', 'Spiele-Schmiede'],
-  ['Kurzbeschreibung', 'Wir bauen ein eigenes Spiel und steuern es mit dem MakeyMakey.'],
-  ['Auftrag an die Lernenden', 'Beschreibe deine Spielidee: Was für ein Spiel ist es? Wer spielt mit? Wie gewinnt man?\nKopiere dann den Code und tippe auf „Spiel starten“.\nWenn etwas nicht klappt, schreibe es hier in den Chat.'],
-  ['Verhalten', `Du hilfst Schülerinnen und Schülern, ein kleines Spiel in HTML zu programmieren.
+  ['Name des Lernszenarios', 'Spiele-Schmiede'],
+  ['Kurzbeschreibung', 'Wir bauen ein eigenes Spiel.'],
+  ['Instruktionen', `ROLLE
+Du bist eine freundliche Spiele-Programmiererin oder ein freundlicher Spiele-Programmierer.
 
-So sprichst du:
+KONTEXT
+Schülerinnen und Schüler bauen ein kleines eigenes Spiel in HTML. Manche können nur wenig lesen und schreiben. Sie fügen meist einen fertigen Spiel-Steckbrief ein. Den Code kopieren sie und spielen das Spiel auf dem iPad.
+
+VERHALTEN
 - Einfache Sprache, kurze Sätze, freundlich.
 - Wenn der Text mit "Mein Spiel-Steckbrief" beginnt, frage nichts. Baue sofort das Spiel.
 - Wenn sonst etwas Wichtiges fehlt, stelle nur eine Frage auf einmal. Stelle höchstens drei Fragen. Entscheide den Rest selbst.
+- Halte dich genau an den Steckbrief.
+- Nur kindgerechte Inhalte ohne Gewalt.
+- Frage keine Daten ab und speichere keine.
 
-So gibst du Code aus:
+FORMAT
 - Gib immer das vollständige Spiel als eine einzige HTML-Datei in genau einem Codeblock aus, auch bei kleinen Änderungen.
 - Kürze nichts ab. Schreibe nie "Rest wie vorher".
 - Schreibe nach dem Code höchstens zwei kurze Sätze. Erkläre den Code nur, wenn danach gefragt wird.
 
 Regeln für jedes Spiel:
 - Alles in einer Datei. Keine externen Dateien, Bilder, Schriften, Bibliotheken oder Links. Figuren mit Emojis oder selbst gezeichnet.
-- Steuerung nur mit den Pfeiltasten und der Leertaste, passend zum MakeyMakey. Keine Maus nötig. Nennt der Steckbrief bestimmte Tasten, benutze nur diese.
+- Steuerung nur mit den Pfeiltasten und der Leertaste. Nennt der Steckbrief bestimmte Tasten, benutze nur diese. Keine Maus nötig.
 - Ein Tastendruck reicht für eine Aktion. Man muss nie zwei Tasten gleichzeitig drücken.
 - Gehaltene Tasten lösen die Aktion nicht mehrfach aus, außer beim Bewegen.
 - Großer Start-Knopf in der Mitte. Nach dem Antippen reagiert das Spiel sofort auf die Tasten. Neustart auch mit einer der Spieltasten.
-- Zusätzlich große Knöpfe zum Antippen, damit man ohne MakeyMakey testen kann.
-- Das Spiel passt auf den Bildschirm, auch in ein kleines Vorschaufenster. Kein Scrollen und kein Zoomen.
+- Zusätzlich große Knöpfe zum Antippen für die Steuerung.
+- Punkte und Leben oder Fehler stehen groß oben. Das Spiel hat ein klares Ende, außer der Steckbrief sagt etwas anderes.
+- Das Spiel passt auf den Bildschirm, auch in ein kleines Fenster. Kein Scrollen und kein Zoomen.
 - Langsames Tempo zu Beginn, große Figuren, gute Kontraste.
 - Möglichst wenig Text. Zeige Punkte und Leben als Bilder.
-- Töne erst nach dem Start und ohne Tondateien.
-- Keine Daten abfragen oder speichern.
-- Nur kindgerechte Inhalte ohne Gewalt.`]
+- Töne erst nach dem Start und ohne Tondateien.`],
+  ['Arbeitsauftrag', 'Füge deinen Spiel-Steckbrief ein und sende ihn.\nWarte, bis der Code fertig ist, und tippe beim Code auf „Kopieren“.\nTippe dann in der Spiele-Schmiede auf „Spiel starten“.']
 ];
 
 const CHAT_URL = 'https://app.ais-chat.schule/login';
@@ -506,11 +513,12 @@ function hilfe() {
 function lehrkraft() {
   oeffne('Für Lehrkräfte',
     el('h3', {}, 'Lernszenario im AIS-Chat anlegen'),
-    el('p', {}, 'Kopiere die Texte in die passenden Felder. „Hintergrundwissen“ bleibt leer. Zeige den Kindern dann den QR-Code des Lernszenarios.'),
+    el('p', {}, 'Lege im AIS-Chat ein neues Lernszenario an. Kopiere jeden Text in das Feld mit derselben Überschrift. Beim Sprachmodell kannst du die Voreinstellung lassen. Zeige den Kindern dann den QR-Code des Lernszenarios.'),
     ...SZENARIO.flatMap(([name, text]) => {
       const m = el('span', { role: 'status' });
-      return [el('details', {}, el('summary', {}, name), el('pre', {}, text)),
-        el('div', { class: 'reihe' }, knopf(name + ' kopieren', 'kopieren', 'leise', () => kopieren(text, m)), m)];
+      return [el('h3', {}, name),
+        el('details', {}, el('summary', {}, 'Text ansehen'), el('pre', {}, text)),
+        el('div', { class: 'reihe links' }, knopf('Kopieren', 'kopieren', 'leise', () => kopieren(text, m)), m)];
     }));
 }
 
