@@ -140,7 +140,6 @@ async function kopieren(text, meldung) {
     t.remove();
   }
   meldung.textContent = ok ? 'Kopiert!' : 'Kopieren geht nicht. Markiere den Text und kopiere ihn selbst.';
-  if (ok) vorlesen('Kopiert');
 }
 
 function kachel(eintrag, gedrueckt, aktion) {
@@ -232,7 +231,6 @@ function zeige(fokus) {
   }
 
   $('btnZurueck').classList.toggle('weg', n === 0);
-  $('btnWuerfel').classList.toggle('weg', !s);
   $('btnWeiter').classList.toggle('weg', n === FERTIG);
   if (fokus) { $('frage').focus({ preventScroll: true }); scrollTo(0, 0); }
 }
@@ -280,7 +278,6 @@ function waehle(s, i) {
   const w = [...s.wahl, EIGEN][i];
   stand.wahl[s.id] = w === EIGEN ? 'eigen' : w[0];
   merken();
-  vorlesen(w[1]);
   zeige(false);
   if (w === EIGEN) $('eigen').focus();
   else $('inhalt').querySelectorAll('.wahl')[i].focus({ preventScroll: true });
@@ -361,7 +358,6 @@ async function scanne() {
     stoppeKamera();
     chatAnsicht('keinChat');
     hinweis.textContent = 'Die Kamera geht nicht. Erlaube die Kamera oder tippe den Code ein.';
-    vorlesen(hinweis.textContent);
     return;
   }
   const bild = document.createElement('canvas');
@@ -396,9 +392,7 @@ chat.addEventListener('close', stoppeKamera);
 document.addEventListener('visibilitychange', () => { if (document.hidden && strom) { stoppeKamera(); chatAnsicht('keinChat'); } });
 $('btnNeuScan').onclick = scanne;
 $('btnErledigt').onclick = () => {
-  const an = $('btnErledigt').getAttribute('aria-checked') !== 'true';
-  setzeHaken(an);
-  if (an) vorlesen('Super! Jetzt kannst du dein Spiel starten.');
+  setzeHaken($('btnErledigt').getAttribute('aria-checked') !== 'true');
 };
 $('auftragTon').onclick = () => vorlesen(AUFTRAEGE.map((a, i) => `${i + 1}. ${a[1]}.`).join(' ') + ' ' + ERLEDIGT);
 $('auftraege').replaceChildren(...AUFTRAEGE.map(([bild, text], i) => {
@@ -455,7 +449,6 @@ function hilfe() {
   const zeichne = () => bilder.replaceChildren(...FEHLER.map((f, i) => kachel(f, aktiv.has(i), () => {
     aktiv.has(i) ? aktiv.delete(i) : aktiv.add(i);
     meldung.textContent = '';
-    vorlesen(f[1]);
     zeichne();
     bilder.querySelectorAll('.wahl')[i].focus({ preventScroll: true });
   })));
@@ -464,7 +457,7 @@ function hilfe() {
   const kopiere = () => {
     const probleme = FEHLER.filter((f, i) => aktiv.has(i)).map(f => '- ' + f[2]);
     if (mehr.value.trim()) probleme.push('- ' + mehr.value.trim());
-    if (!probleme.length) { meldung.textContent = 'Tippe zuerst auf ein Bild.'; vorlesen(meldung.textContent); return; }
+    if (!probleme.length) { meldung.textContent = 'Tippe zuerst auf ein Bild.'; return; }
     kopieren(`Bitte verbessere mein Spiel:\n${probleme.join('\n')}\nGib mir wieder das ganze Spiel in einem Codeblock.`, meldung);
   };
   oeffne('Was klappt nicht?', bilder, el('h3', {}, el('label', { for: 'mehr' }, 'Noch etwas?')), mehr,
@@ -487,12 +480,6 @@ document.querySelectorAll('[data-symbol]').forEach(b => b.insertAdjacentHTML('af
 $('frageTon').onclick = () => vorlesen($('frage').textContent);
 $('btnZurueck').onclick = () => gehe(stand.schritt - 1);
 $('btnWeiter').onclick = () => gehe(stand.schritt + 1);
-$('btnWuerfel').onclick = () => {
-  const s = SCHRITTE[stand.schritt];
-  if (!s) return;
-  const andere = s.wahl.map((w, i) => i).filter(i => s.wahl[i][0] !== stand.wahl[s.id]);
-  waehle(s, andere[Math.floor(Math.random() * andere.length)]);
-};
 $('btnTasten').onclick = tastenTest;
 $('btnKaputt').onclick = hilfe;
 $('btnLehrer').onclick = lehrkraft;

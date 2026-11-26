@@ -75,7 +75,6 @@ function zeigeEinfuegen(hinweis = '') {
   vollbild(false);
   $('codeFeld').hidden = !hinweis;   // Ersatzfeld nur, wenn der Knopf allein nicht reicht
   $('btnAltes').hidden = !spielCode;
-  if (hinweis) vorlesen(hinweis);
 }
 function uebernehmen(text) {
   const erg = htmlAus(text);

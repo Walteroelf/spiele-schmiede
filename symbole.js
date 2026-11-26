@@ -11,7 +11,6 @@ const SYMBOLE = {
   ton: p('M4 9v6h4l5 4V5L8 9zM16 9a4 4 0 0 1 0 6M18.500 6.500a8 8 0 0 1 0 11'),
   zurueck: p('M19 12H5M11 6l-6 6 6 6'),
   weiter: p('M5 12h14M13 6l6 6-6 6'),
-  wuerfel: '<rect x="4" y="4" width="16" height="16" rx="3"/>' + punkt(8.5, 8.5) + punkt(12, 12) + punkt(15.5, 15.5),
   kreuz: p('M6 6l12 12M18 6L6 18'),
   haken: p('M4 12.500l5 5L20 6.500'),
   kopieren: '<rect x="8" y="8" width="12" height="12" rx="2"/>' + p('M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3'),
